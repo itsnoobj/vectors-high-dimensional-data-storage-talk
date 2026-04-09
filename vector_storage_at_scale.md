@@ -590,7 +590,7 @@ Recall
 <!-- pause -->
 
 **2. Quantization is the biggest lever.** BQ + re-rank: 32x compression,
-   92-96% recall. `halfvec` alone gets you 2x for free. Plan for it from day one.
+   92-96% recall. FP16 gets you 2x with near-zero recall loss. Plan for it from day one.
 
 <!-- pause -->
 
@@ -630,12 +630,31 @@ Recall
 
 # The End
 
+<!-- column_layout: [2, 1] -->
+
+<!-- column: 0 -->
+
 **<span style="color: #f9e2af">Your vectors aren't special. Your architecture decisions are.</span>** 🚀
 
 **Questions?**
 
-📬 **Get in touch:** jeevan.dc24@alumni.iimb.ac.in
-🌐 **Blog:** https://noobj.me/
+📬 **Get in touch:**
+<span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span>
+
+🌐 **Blog:**
+<span style="color: #89b4fa">https://noobj.me/</span>
+
+<!-- column: 1 -->
+
+![](images/gifs/thank-you-bow.gif)
+
+<!-- reset_layout -->
+
+<!-- column_layout: [1, 2, 1] -->
+
+<!-- column: 0 -->
+
+<!-- column: 1 -->
 
 **Slides & Code:**
 
@@ -661,7 +680,7 @@ Recall
 █████████████████████████████████████
 ```
 
-![](images/gifs/thank-you-bow.gif)
+<!-- column: 2 -->
 
 <!-- end_slide -->
 
