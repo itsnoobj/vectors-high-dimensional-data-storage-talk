@@ -6,7 +6,7 @@ Two talks on vector search: from fundamentals to production-scale architecture d
 
 | Talk | File | Duration | Audience |
 |------|------|----------|----------|
-| **Inside pgvector** | `archive/pgvector_presentation.md` | ~20 min | How PostgreSQL stores, indexes & manages high-dimensional data |
+| **Inside pgvector** | `pgvector_presentation.md` | ~20 min | How PostgreSQL stores, indexes & manages high-dimensional data |
 | **Vector Search Fundamentals** | `vector_search_fundamentals.md` | ~20 min | Getting started with pgvector — embeddings, indexing, semantic search |
 | **Storing High-Dimensional Data at Scale** | `vector_storage_at_scale.md` | ~20 min | Senior/architect — RAM wall, quantization, filtered search, DiskANN, architecture trade-offs |
 
@@ -39,7 +39,7 @@ presenterm vector_storage_at_scale.md
 ├── vector_search_fundamentals.md        # Talk 1: Fundamentals
 ├── vector_storage_at_scale.md           # Talk 2: Scale & architecture
 ├── archive/
-│   ├── pgvector_presentation.md         # Original: Inside pgvector
+│   ├── pgvector_deep_dive_demo.md       # SQL walkthrough demo
 │   ├── vector_storage_at_scale_detailed.md
 │   └── DEMO_COMMANDS.md                 # SQL commands for live demos
 └── .env.example                         # DB config template
