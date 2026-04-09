@@ -240,9 +240,9 @@ The next few sections give you the levers to avoid all three.
 
 <!-- end_slide -->
 
-# Three Ways Through the Wall
+# Two Ways Through the Wall
 
-![](images/three-ways.png)
+![](images/two-ways.png)
 
 <!-- end_slide -->
 
