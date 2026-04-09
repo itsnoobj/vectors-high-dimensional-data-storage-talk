@@ -93,7 +93,7 @@ isn't something a B-tree can answer. You need specialized structures:
 
 <!-- column: 0 -->
 
-**IVFFlat** — Cluster & search
+**<span style="color: #4EC9B0">IVFFlat</span>** — <span style="color: #f9e2af">Cluster & search</span>
 
 Divide vectors into clusters (k-means).
 At query time, search only nearest cluster(s).
@@ -101,11 +101,11 @@ At query time, search only nearest cluster(s).
 *"Go to the Italian district,
 then check every restaurant there."*
 
-![](images/gifs/clustering.gif)
+![](images/ivfflat.png)
 
 <!-- column: 1 -->
 
-**HNSW** — Multi-layer graph
+**<span style="color: #4EC9B0">HNSW</span>** — <span style="color: #f9e2af">Multi-layer graph</span>
 
 Build a navigable graph with layers.
 Top = express highways. Bottom = local streets.
@@ -119,39 +119,21 @@ then local roads."*
 
 <!-- pause -->
 
-**Both assume vectors live in RAM.** That's fine at 1M vectors.
-At 100M? Let's do the math.
+<span style="color: #f38ba8">**Both assume vectors live in RAM.**</span> <span style="color: #f9e2af">That's fine at 1M vectors.
+At 100M? Let's do the math.</span>
 
 <!-- end_slide -->
 
 # The RAM Wall
 
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
-**Everyone wants to build AI on their own data.**
-
-Leadership wants to know why the infrastructure bill just tripled.
-
-The #1 shift in vector storage since 2024:
-Moving away from keeping everything in memory.
-
-<!-- column: 1 -->
+**Everyone wants to build AI on their own data.
+Leadership wants to know why the infrastructure bill just tripled.**
 
 ![](images/gifs/this-is-fine.gif)
-
-<!-- end_slide -->
-
-# The Math That Breaks Your Budget
-
-**OpenAI text-embedding-3-small: 1536 dimensions, FP32**
 
 ```
 Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 ```
-
-<!-- pause -->
 
 | Scale | Raw Vectors | + HNSW (50%) | Approx. RAM Cost |
 |-------|------------|-------------|-----------------|
@@ -165,27 +147,14 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 <!-- pause -->
 
 **The cliff isn't linear.** Going from 64 GB → 920 GB RAM means jumping from
-a single node to a distributed cluster. <span style="color: #f38ba8">That's not 15x cost — it's 30-50x
-operational complexity.</span>
+a single node to a distributed cluster. <span style="color: #f38ba8">That's not 15x cost —
+it's 30-50x operational complexity.</span>
 
 <!-- end_slide -->
 
 # Three Ways Through the Wall
 
-<!-- pause -->
-
-**1. <span style="color: #4EC9B0">Quantization</span>** — Don't store full-precision floats for the search step
-   - Trade tiny recall loss for 4x–32x memory savings
-
-<!-- pause -->
-
-**2. <span style="color: #4EC9B0">Disk-optimized indexes (DiskANN)</span>** — Compressed index in RAM, full vectors on SSD
-   - Billions of vectors on a single node with NVMe
-
-<!-- pause -->
-
-**3. Matryoshka embeddings** — Use models that produce useful embeddings at lower dimensions
-   - OpenAI's text-embedding-3-large at 256d outperforms their previous ada-002 at 1536d (MTEB)
+![](images/three-ways.png)
 
 <!-- pause -->
 
@@ -236,7 +205,7 @@ XOR + popcount. Hardware-accelerated.
 
 <!-- pause -->
 
-**The production pattern (2025+):**
+**<span style="color: #f9e2af">The production pattern (for now):</span>**
 
 ```
 Query → BQ index (RAM, fast)
@@ -246,9 +215,6 @@ Query → BQ index (RAM, fast)
 ```
 
 *<span style="color: #f9e2af">Re-rank = recompute distances with full precision on a small candidate set.</span>*
-
-Used by: Elastic (BBQ), MongoDB Atlas,
-Azure AI Search, Weaviate (RQ), Qdrant.
 
 <!-- end_slide -->
 
@@ -274,29 +240,28 @@ python scripts/quantization_demo.py
 | Binary (1-bit) | 192 MB | ~10%* | Fast but imprecise alone |
 | Binary + re-rank | 192 MB + disk | ~99% | The production pattern |
 
-*\*BQ recall without re-rank varies wildly by model: 2-92%. Our synthetic demo shows worst case.
-With BQ-optimized models (Cohere, Jina) it's 60-92%. Re-ranking recovers to 92-96%.*
+*\*BQ recall without re-rank is model-dependent (75-95%). Re-ranking recovers to 92-96%.*
 
 <!-- pause -->
 
 **Why BQ + re-rank works:** The binary pass eliminates 99% of candidates
-using XOR (essentially free on modern CPUs with `POPCNT`).
-Then you only fetch ~200 full vectors from disk to re-rank.
+using XOR. Then you only fetch ~200 full vectors from disk to re-rank.
 
-**Note:** BQ recall is model-dependent. Models designed for BQ
-(Cohere embed-v3, Jina v3) perform better than older models.
-
-*Quick aside — recall means "of the true top 10, how many did we actually find?"
-We'll come back to this trade-off at the end.*
+<span style="color: #f9e2af">*Recall = "of the true top 10, how many did we actually find?" We'll come back to this.*</span>
 
 <!-- end_slide -->
 
 # DiskANN: Beyond HNSW
 
-**We've solved the precision problem with quantization.
-But what about the graph itself? HNSW's graph structure still needs RAM.**
+**Quantization shrinks the vectors. But at hundreds of millions of vectors, the graph structure itself still needs significant RAM.**
 
-![](images/diskann-vs-hnsw.png)
+![](images/six-degrees-diskann.png)
+
+<!-- end_slide -->
+
+# DiskANN: The Architecture
+
+![](images/diskann-query-flow.png)
 
 <!-- pause -->
 
@@ -312,33 +277,19 @@ But what about the graph itself? HNSW's graph structure still needs RAM.**
 
 <!-- pause -->
 
-**Available in PostgreSQL:** `pgvectorscale` (Timescale) and `pg_diskann` (Azure — GA May 2025).
-
-<!-- end_slide -->
-
-# So far we've solved the *scale* problem. But there's a second problem that hits even at small scale...
-
-![](images/gifs/interstellar.gif)
-
 <!-- end_slide -->
 
 # The Filtered Search Problem
 
-**In production, you almost never search the entire database.**
-**This problem hits every vector database — not just PostgreSQL.**
+**So far we've solved the *scale* problem. But there's a second problem that hits even at small scale.**
+
+<span style="color: #f9e2af">**In production, you almost never search the entire database.**</span>
 
 ```sql
--- PostgreSQL / pgvector
 SELECT * FROM products
 WHERE tenant_id = 42 AND category = 'electronics'
 ORDER BY embedding <=> query_embedding
 LIMIT 10;
-```
-
-```python
-# Pinecone / Qdrant / Weaviate — same problem, different syntax
-results = index.query(vector=query_emb, top_k=10,
-    filter={"tenant_id": 42, "category": "electronics"})
 ```
 
 **⚠️ The vector index only knows about distance — it's blind to your metadata.**
@@ -422,8 +373,7 @@ LIMIT 10;
 
 <!-- pause -->
 
-**Before 0.8:** ef_search=40, filter matches 10% → ~4 results instead of 10.
-Now iterative_scan keeps going until LIMIT is satisfied.
+**Key:** Ensure your database keeps scanning until LIMIT is satisfied, not just one pass.
 
 <!-- end_slide -->
 
@@ -438,9 +388,10 @@ Now iterative_scan keeps going until LIMIT is satisfied.
 
 <!-- pause -->
 
-**The honest takeaway:** Partial indexes and partitioning are the only true filters.
-Everything else (iterative_scan, payload-aware traversal) is "good enough, not perfect" —
-the graph was built from all vectors, so traversal still touches irrelevant nodes.
+**The honest takeaway:**
+- Partial indexes & partitioning = only true filters (separate graph per value)
+- iterative_scan, payload-aware traversal = good enough, not perfect
+- Graph was built from all vectors — traversal still touches irrelevant nodes
 
 <span style="color: #f38ba8">**This is an active research area.**</span> No database has fully solved it yet.
 
@@ -452,40 +403,28 @@ the graph was built from all vectors, so traversal still touches irrelevant node
 
 # The Architecture Decision
 
-**Should you add a specialized vector DB or add vectors to your existing DB?**
-
-| Factor | Specialized Vector DB | Converged DB |
-|--------|----------------------|--------------|
-| | Pinecone, Qdrant, Weaviate | pgvector, Oracle 23ai, Mongo Atlas |
-| Ops complexity | New stack (managed options exist) | Reuse existing infra |
-| Data consistency | Eventual if syncing from primary DB | ACID, single source of truth |
-| Metadata queries | Limited query language | Full SQL / native joins |
-| Cutting-edge | Ahead: multi-modal, GPU indexing, native hybrid | Caught up on BQ & DiskANN |
-| Scaling | Native sharding, managed scaling | Single-node; DiskANN extends to 1B+ |
-| Lock-in | High (Pinecone proprietary; OSS options exist) | Low (standard SQL, portable) |
+![](images/architecture-decision.png)
 
 <!-- end_slide -->
 
 # The Data Sync Tax
 
-![](images/data-sync-tax.png)
+![](images/data-sync-tax-compact.png)
 
-<!-- pause -->
+**Mitigations:**
+- Outbox pattern, CDC (Debezium), reconciliation jobs
+- Managed vector DBs reduce ops burden
 
-**Mitigations exist** (outbox pattern, CDC via Debezium, reconciliation jobs) —
-but they add engineering cost. Converged DBs avoid the problem entirely.
-
-<!-- pause -->
-
-**To be fair:** Managed vector DBs (Pinecone Serverless, Qdrant Cloud) reduce
-the ops burden. And pgvector at scale has its own pain: multi-hour index builds,
-VACUUM pressure, no built-in hybrid search.
+**But converged DBs have their own pain:**
+- Multi-hour index builds at scale
+- VACUUM pressure on updates
+- No built-in hybrid search
 
 **It's a <span style="color: #f9e2af">genuine trade-off</span>, not a clear winner.**
 
 <!-- end_slide -->
 
-# Don't Forget: Hybrid Search (BM25 + Vectors)
+# Hybrid Search: BM25 + Vectors
 
 **In production RAG, the best retrieval combines keyword and semantic search.**
 
@@ -500,11 +439,8 @@ Combined: Better recall than either alone.
 
 <!-- pause -->
 
-**How to do it:**
-- PostgreSQL: `pgvector` + ParadeDB `pg_search` (BM25 via Tantivy)
-- Elasticsearch / MongoDB Atlas: native hybrid with RRF
-- Weaviate / Qdrant: built-in hybrid search
-- Any stack: application-level Reciprocal Rank Fusion (RRF)
+**How:** Run both searches, merge results with Reciprocal Rank Fusion (RRF).
+Most databases and frameworks support this natively or at the application level.
 
 **If you're building RAG, you <span style="color: #f9e2af">almost certainly want hybrid retrieval.</span>**
 
@@ -571,7 +507,7 @@ Recall
 <!-- pause -->
 
 **3. Filtered search is the hard problem.** Post-filter fails silently.
-   Use `iterative_scan` (pgvector 0.8+) or integrated filtered traversal.
+   Use partial indexes, partitioning, or iterative scanning.
 
 <!-- pause -->
 
@@ -605,7 +541,7 @@ Recall
 
 # The End
 
-**<span style="color: #f9e2af">Vectors are just columns. Treat them like data, not magic.</span>** 🚀
+**<span style="color: #f9e2af">Your vectors aren't special. Your architecture decisions are.</span>** 🚀
 
 **Questions?**
 
@@ -613,6 +549,51 @@ Recall
 🌐 **Blog:** https://noobj.me/
 
 ![](images/gifs/thank-you-bow.gif)
+
+<!-- end_slide -->
+
+# Appendix: How Re-ranking Works
+
+![](images/reranking-analogy.png)
+
+<!-- end_slide -->
+
+# Appendix: Re-ranking in Action
+
+**A real query flowing through the cascade:**
+
+```
+Query: "How does photosynthesis work in deep ocean vents?"
+
+Stage 1 — BM25 keyword search (milliseconds):
+  → 1000 docs matching "photosynthesis", "ocean", "vents"
+  → includes junk: "ocean pollution", "air vents in buildings"
+
+Stage 2 — Vector ANN with compressed index (milliseconds):
+  → narrows to 100 by semantic similarity
+  → still includes docs about regular plant photosynthesis
+
+Stage 3 — Cross-encoder re-ranker (tens of milliseconds):
+  → reads query + each doc together through a transformer
+  → understands "deep ocean" + "vents" = hydrothermal context
+  → ranks "chemosynthesis at hydrothermal vents" highest
+  → pushes generic photosynthesis docs down
+
+Return top 10.
+```
+
+<!-- pause -->
+
+**Why the cross-encoder is smarter:**
+
+A bi-encoder (stage 2) encodes query and doc *separately* — it can't see the relationship.
+A cross-encoder reads them *together* — every query word attends to every doc word.
+
+*Bi-encoder thinks "python snake" and "python programming" are similar.*
+*Cross-encoder reads the context and knows they're different.*
+
+**The cost:** Cross-encoder runs inference per (query, doc) pair. Can't precompute.
+That's why you only run it on ~100 candidates, not millions.
 
 <!-- end_slide -->
 
@@ -716,14 +697,14 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 | | FP32 | FP16 (half) | Scalar INT8 | Product (PQ) | Binary (BQ) |
 |---|---|---|---|---|---|
 | **Compression** | 1x | <span style="color: #a6e3a1">2x</span> | <span style="color: #a6e3a1">4x</span> | <span style="color: #a6e3a1">8-64x</span> | <span style="color: #a6e3a1">32x</span> |
-| **Recall (no re-rank)** | <span style="color: #a6e3a1">100%</span> | <span style="color: #a6e3a1">~99.9%</span> | <span style="color: #a6e3a1">~95-98%</span> | <span style="color: #f9e2af">~85-95%</span> | <span style="color: #f38ba8">~2-92%*</span> |
+| **Recall (no re-rank)** | <span style="color: #a6e3a1">100%</span> | <span style="color: #a6e3a1">~99.9%</span> | <span style="color: #a6e3a1">~95-98%</span> | <span style="color: #f9e2af">~85-95%</span> | <span style="color: #f9e2af">~75-95%*</span> |
 | **Recall (w/ re-rank)** | — | — | <span style="color: #a6e3a1">~98-99%</span> | <span style="color: #a6e3a1">~95-99%</span> | <span style="color: #f9e2af">~92-96%</span> |
 | **Speed vs FP32** | 1x | <span style="color: #f9e2af">~1.5x</span> | <span style="color: #a6e3a1">~2-3x</span> | <span style="color: #a6e3a1">~5-10x</span> | <span style="color: #a6e3a1">~15-30x</span> |
 | **Training needed?** | <span style="color: #a6e3a1">No</span> | <span style="color: #a6e3a1">No</span> | <span style="color: #a6e3a1">No</span> | <span style="color: #f38ba8">Yes</span> | <span style="color: #a6e3a1">No</span> |
 | **Model-sensitive?** | <span style="color: #a6e3a1">No</span> | <span style="color: #a6e3a1">No</span> | <span style="color: #a6e3a1">Low</span> | <span style="color: #f9e2af">Medium</span> | <span style="color: #f38ba8">High</span> |
 | **Best for** | Small scale | Easy first win | General purpose | Massive datasets | Speed-critical |
 
-*\*BQ recall without re-rank varies wildly by model and dimensionality (2% on SIFT-128d to 92% on high-d with optimized models).*
+*\*BQ recall without re-rank varies by model (75% for e5-base-v2 to 95% for Cohere-v3, per HuggingFace MTEB benchmarks).*
 *Speed multipliers are for distance computation, not additive on top of ANN index speedups.*
 *Sources: huggingface.co/blog/embedding-quantization, weaviate.io/blog/8-bit-rotational-quantization, mongodb.com/blog/post/binary-quantization-rescoring-96-less-memory-faster-search*
 
