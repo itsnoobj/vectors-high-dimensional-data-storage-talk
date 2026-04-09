@@ -1,4 +1,4 @@
-# Vector Search with PostgreSQL
+# High-Dimensional Data Storage Talks
 
 Two talks on vector search: from fundamentals to production-scale architecture decisions.
 
