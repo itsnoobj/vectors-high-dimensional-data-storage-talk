@@ -87,7 +87,17 @@ There's a clear sort order. Binary search. O(log n). Done.
 <!-- pause -->
 
 **Vector indexes** have no natural sort order. "Closest to this 1536-dimensional point"
-isn't something a B-tree can answer. You need specialized structures:
+isn't something a B-tree can answer.
+
+**Exact search = check every vector.** That's too slow at scale.
+
+![](images/gifs/exact-search-slow.png)
+
+<!-- end_slide -->
+
+# How ANN Indexes Work
+
+**You need specialized structures to search without checking everything:**
 
 <!-- column_layout: [1, 1] -->
 
@@ -155,10 +165,6 @@ it's 30-50x operational complexity.</span>
 # Three Ways Through the Wall
 
 ![](images/three-ways.png)
-
-<!-- pause -->
-
-Let's go deep on <span style="color: #4EC9B0">quantization</span> — the biggest lever most teams aren't using.
 
 <!-- end_slide -->
 
@@ -261,27 +267,34 @@ using XOR. Then you only fetch ~200 full vectors from disk to re-rank.
 
 # DiskANN: The Architecture
 
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
 ![](images/diskann-query-flow.png)
 
-<!-- pause -->
+<!-- column: 1 -->
 
-| Factor | HNSW | Quantized HNSW | DiskANN |
-|--------|------|---------------|---------|
-| Sweet spot | < 10-20M (1536d) | 10-200M | 100M – 1B+ |
-| RAM at 100M (1536d) | ~920 GB | ~30-60 GB* | ~10-25 GB |
-| Latency (p50) | 1-5ms | 2-8ms | 5-15ms |
-| Cost at 100M | ~$5K/mo | ~$500/mo | ~$200-300/mo |
+| Factor | HNSW | Q-HNSW | DiskANN |
+|--------|------|--------|---------|
+| Sweet spot | < 10-20M | 10-200M | 100M–1B+ |
+| RAM (100M) | ~920 GB | ~30-60 GB | ~10-25 GB |
+| Latency | 1-5ms | 2-8ms | 5-15ms |
+| Cost (100M) | ~$5K/mo | ~$500/mo | ~$200/mo |
 
-*\*Quantized index in RAM; full vectors on disk for re-ranking.*
-*Costs: AWS on-demand, single-region. Reserved instances 30-50% less.*
+*Q-HNSW: quantized index in RAM, full vectors on disk.*
+*Costs: AWS on-demand.*
 
-<!-- pause -->
+<!-- reset_layout -->
 
 <!-- end_slide -->
 
 # The Filtered Search Problem
 
-**So far we've solved the *scale* problem. But there's a second problem that hits even at small scale.**
+**So far we've solved the *scale* problem.
+But there's a second problem that hits even at small scale.**
+
+<!-- pause -->
 
 <span style="color: #f9e2af">**In production, you almost never search the entire database.**</span>
 
@@ -292,11 +305,19 @@ ORDER BY embedding <=> query_embedding
 LIMIT 10;
 ```
 
-**⚠️ The vector index only knows about distance — it's blind to your metadata.**
-Whether it's HNSW, IVFFlat, or DiskANN, the index can't natively combine
-"nearest vectors" with "matching metadata" in one step.
+<!-- pause -->
 
-![](images/gifs/where.gif)
+**⚠️ The vector index only knows about distance —
+it's blind to your metadata.**
+
+Whether it's HNSW, IVFFlat, or DiskANN,
+the index can't natively combine
+"nearest vectors" with "matching metadata"
+in one step.
+
+If only 2% of rows match your filter,
+most ANN candidates get thrown away.
+You asked for 10 results. You might get 0.
 
 <!-- end_slide -->
 
@@ -308,7 +329,7 @@ Whether it's HNSW, IVFFlat, or DiskANN, the index can't natively combine
 
 # The Fixes: Three Approaches
 
-**1. <span style="color: #4EC9B0">Iterative scan</span>** (pgvector 0.8+) — keep scanning until you have enough
+**1. <span style="color: #4EC9B0">Iterative scan</span>** — keep scanning until you have enough
 
 ```
 HNSW returns 40 candidates → filter → only 4 match → not enough!
@@ -409,18 +430,7 @@ LIMIT 10;
 
 # The Data Sync Tax
 
-![](images/data-sync-tax-compact.png)
-
-**Mitigations:**
-- Outbox pattern, CDC (Debezium), reconciliation jobs
-- Managed vector DBs reduce ops burden
-
-**But converged DBs have their own pain:**
-- Multi-hour index builds at scale
-- VACUUM pressure on updates
-- No built-in hybrid search
-
-**It's a <span style="color: #f9e2af">genuine trade-off</span>, not a clear winner.**
+![](images/data-sync-tax.png)
 
 <!-- end_slide -->
 
@@ -526,7 +536,7 @@ Recall
 - **DiskANN Paper** — github.com/microsoft/DiskANN
 - **DiskANN on Azure PostgreSQL** — techcommunity.microsoft.com/blog/adforpostgresql/diskann-on-azure-database-for-postgresql-now-generally-available/4414723
 - **HNSW Memory Overhead** — lantern.dev/blog/calculator
-- **pgvector 0.8** — github.com/pgvector/pgvector
+- **pgvector** — github.com/pgvector/pgvector
 - **pgvectorscale (StreamingDiskANN)** — github.com/timescale/pgvectorscale
 - **Embedding Quantization** — huggingface.co/blog/embedding-quantization
 - **Weaviate Rotational Quantization** — weaviate.io/blog/8-bit-rotational-quantization
@@ -547,6 +557,30 @@ Recall
 
 📬 **Get in touch:** jeevan.dc24@alumni.iimb.ac.in
 🌐 **Blog:** https://noobj.me/
+
+**Slides & Code:**
+
+```
+█████████████████████████████████████
+█████████████████████████████████████
+████ ▄▄▄▄▄ █▀ ▄ ▀█▄ ▀█▄▄▀█ ▄▄▄▄▄ ████
+████ █   █ █▄█  ▄█ ▀█▄ ▄▄█ █   █ ████
+████ █▄▄▄█ █ ▄█▄█ █  ▀ ▀██ █▄▄▄█ ████
+████▄▄▄▄▄▄▄█ ▀▄▀ █▄▀▄▀ ▀ █▄▄▄▄▄▄▄████
+████ ▄▀ █▀▄ ▀█▄▄▀ ▄▄▄▀ ▄▀█ ▄▄▀▄▄▀████
+████  █▀▄ ▄██▄▄█▀ ▄███ ▄▄▄██ ▄  █████
+█████▀▀▄█▄▄▀▄█▀▄▄ ▄██▄▄   ▄██▄█▄▄████
+████▀██   ▄▄▀ ▄ ▀▀ █▀▀▀█ ▀ ▄▄ ▄ ▄████
+██████ █▀█▄▄█▄▄▀ ▀█▄▀▄▀█ ▀▀ █▀█▄▀████
+████▄█▀ █ ▄ ▀  █▀▄ ▀▄▀▄█▀ █  ██  ████
+████▄█████▄▄ ▄█▄   █▀▀█  ▄▄▄ █ ▀▀████
+████ ▄▄▄▄▄ █▄▀▄██ ▀█▄▄▀█ █▄█ ▀▀ █████
+████ █   █ █▀▀▄█  ██▄ ▀▀ ▄   ▀▀▄▄████
+████ █▄▄▄█ █▀ ▀▄▄  ▀▀▀█  ▀██ ▄▄▀▄████
+████▄▄▄▄▄▄▄█▄▄███████▄██▄▄▄▄▄▄█▄█████
+█████████████████████████████████████
+█████████████████████████████████████
+```
 
 ![](images/gifs/thank-you-bow.gif)
 
@@ -620,8 +654,6 @@ That's why you only run it on ~100 candidates, not millions.
 
 <!-- end_slide -->
 
-<!-- end_slide -->
-
 # Appendix: How Product Quantization Works
 
 **Analogy: Instead of storing the whole shape, store a Lego instruction manual.**
@@ -648,8 +680,6 @@ No floating-point math. Just table lookups and additions.
 
 **The catch:** Bricks are approximations. Distance is estimated, not exact.
 That's why you re-rank the top candidates with full-precision vectors.
-
-<!-- end_slide -->
 
 <!-- end_slide -->
 
@@ -690,8 +720,6 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 
 <!-- end_slide -->
 
-<!-- end_slide -->
-
 # Appendix: Quantization Trade-offs
 
 | | FP32 | FP16 (half) | Scalar INT8 | Product (PQ) | Binary (BQ) |
@@ -710,8 +738,6 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 
 <!-- end_slide -->
 
-<!-- end_slide -->
-
 # Appendix: Vector Index Comparison
 
 | | Flat (brute force) | IVFFlat | HNSW | DiskANN | SPANN |
@@ -726,7 +752,7 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 | **Filtered search** | <span style="color: #a6e3a1">Native</span> | <span style="color: #f38ba8">Poor</span> | <span style="color: #f9e2af">Post-filter</span> | <span style="color: #f9e2af">Iterative</span> | <span style="color: #f9e2af">Cluster-based</span> |
 | **When to use** | < 10K vectors | Batch/analytics | Production, < 50M | 50M-1B | Large + hybrid |
 
-*\*HNSW 100M build time assumes parallel builds (pgvector 0.7+). Single-threaded can be 5-10x longer.*
+*\*HNSW 100M build time assumes parallel builds. Single-threaded can be 5-10x longer.*
 *Sources: milvus.io/blog/diskann-explained, lantern.dev/blog/calculator, ann-benchmarks.com, github.com/microsoft/DiskANN*
 
 <!-- end_slide -->
