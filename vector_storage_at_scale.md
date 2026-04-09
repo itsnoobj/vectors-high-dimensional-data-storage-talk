@@ -5,6 +5,49 @@ author: "Narrated by: Jeevan"
 date: "April 2026"
 ---
 
+# Why This Talk, Why Now
+
+<!-- column_layout: [2, 1] -->
+
+<!-- column: 0 -->
+
+Every team is adding vector search. Few are planning for what happens next.
+
+<!-- pause -->
+
+**The pattern we keep seeing:**
+
+```
+Month 1:  "Let's add semantic search!"
+          → pgvector, 100K vectors, works great ✅
+
+Month 4:  "Scale to all our docs"
+          → 10M vectors, still fine ✅
+
+Month 8:  "Enterprise rollout"
+          → 100M vectors, RAM bill explodes 💸
+
+Month 9:  "Add per-tenant filtering"
+          → recall silently drops to 40% 🔇
+
+Month 10: "Maybe we need Pinecone?"
+          → now you're syncing two databases forever 🔄
+```
+
+<!-- column: 1 -->
+
+![](images/gifs/flipping-papers.gif)
+
+<!-- reset_layout -->
+
+<!-- pause -->
+
+**This talk gives you the mental model to make these decisions <span style="color: #a6e3a1">*before* month 8.</span>**
+
+Just the <span style="color: #f9e2af">trade-offs — in plain English.</span>
+
+<!-- end_slide -->
+
 # Today's Journey
 
 <!-- column_layout: [1, 1] -->
@@ -159,6 +202,41 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 **The cliff isn't linear.** Going from 64 GB → 920 GB RAM means jumping from
 a single node to a distributed cluster. <span style="color: #f38ba8">That's not 15x cost —
 it's 30-50x operational complexity.</span>
+
+<!-- end_slide -->
+
+# The Cost of Getting It Wrong
+
+![](images/gifs/interstellar.gif)
+
+**Three real patterns we see teams fall into:**
+
+<!-- pause -->
+
+**1. <span style="color: #f38ba8">"Just use HNSW, it's the best"</span>**
+Works at 5M. At 80M, you need 750 GB RAM across a cluster.
+→ ~$5K/mo infra + 2 engineers firefighting OOMs
+
+<!-- pause -->
+
+**2. <span style="color: #f38ba8">"Let's add Pinecone alongside Postgres"</span>**
+Now you sync two systems. Every schema change = two deploys.
+Stale vectors cause silent recall drops.
+→ +$2K/mo Pinecone + ongoing sync bugs
+
+<!-- pause -->
+
+**3. <span style="color: #f38ba8">"We'll optimize later"</span>**
+No quantization planned. Index rebuild at 50M takes 3 days.
+Can't ship features while rebuilding.
+→ 1-2 week migration project, production freeze
+
+<!-- pause -->
+
+**The common thread:** these aren't bad tools — they're <span style="color: #f9e2af">premature decisions
+made without doing the math first.</span>
+
+The next few sections give you the levers to avoid all three.
 
 <!-- end_slide -->
 
@@ -754,5 +832,141 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 
 *\*HNSW 100M build time assumes parallel builds. Single-threaded can be 5-10x longer.*
 *Sources: milvus.io/blog/diskann-explained, lantern.dev/blog/calculator, ann-benchmarks.com, github.com/microsoft/DiskANN*
+
+<!-- end_slide -->
+
+# Appendix: Quantization How-To — PostgreSQL
+
+**<span style="color: #4EC9B0">Scalar Quantization — FP16 (halfvec)</span>** · 2x compression · pgvector native
+
+```sql
+ALTER TABLE docs ADD COLUMN embedding_half halfvec(1536);
+UPDATE docs SET embedding_half = embedding::halfvec(1536);
+CREATE INDEX ON docs USING hnsw (embedding_half halfvec_cosine_ops);
+
+SELECT id, content FROM docs
+ORDER BY embedding_half <=> $query::halfvec(1536) LIMIT 10;
+```
+
+<!-- pause -->
+
+**<span style="color: #4EC9B0">Scalar Quantization — INT8 (SQ)</span>** · 4x compression · pgvectorscale
+
+```sql
+-- pgvectorscale's StreamingDiskANN uses SQ internally
+CREATE INDEX ON docs
+  USING diskann (embedding vector_cosine_ops)
+  WITH (num_neighbors = 50);
+-- SQ applied automatically — INT8 in index, FP32 on disk for re-ranking
+```
+
+*pgvector has no native INT8 type. pgvectorscale handles SQ + re-rank transparently.*
+
+<!-- end_slide -->
+
+# Appendix: Quantization How-To — PostgreSQL (cont.)
+
+**<span style="color: #4EC9B0">Binary Quantization (BQ)</span>** · 32x compression · pgvector native
+
+```sql
+ALTER TABLE docs ADD COLUMN embedding_bit bit(1536);
+UPDATE docs SET embedding_bit = binary_quantize(embedding)::bit(1536);
+CREATE INDEX ON docs USING hnsw (embedding_bit bit_hamming_ops);
+
+-- BQ coarse pass + FP32 re-rank
+WITH candidates AS (
+  SELECT id, content, embedding FROM docs
+  ORDER BY embedding_bit <~> binary_quantize($query)::bit(1536)
+  LIMIT 200
+)
+SELECT id, content FROM candidates
+ORDER BY embedding <=> $query LIMIT 10;
+```
+
+<!-- pause -->
+
+**<span style="color: #4EC9B0">Product Quantization (PQ)</span>** · 8-64x compression · <span style="color: #f38ba8">not in pgvector</span>, <span style="color: #a6e3a1">available via pgvectorscale</span>
+
+PQ splits vectors into subvectors and replaces each with a trained centroid ID.
+pgvector has no native PQ, but pgvectorscale's DiskANN uses SBQ (a PQ variant) internally:
+
+```sql
+-- pgvectorscale — DiskANN with SBQ (sub-vector binary quantization)
+CREATE EXTENSION IF NOT EXISTS vectorscale;
+
+CREATE INDEX ON docs
+  USING diskann (embedding vector_cosine_ops)
+  WITH (
+    num_neighbors = 50,
+    storage_layout = 'memory_optimized'  -- enables SBQ compression
+    -- vectors are split into sub-vectors and binary-quantized
+    -- full vectors kept on disk for automatic re-ranking
+  );
+
+-- Query unchanged — SBQ + re-rank happens transparently
+SELECT id, content FROM docs
+ORDER BY embedding <=> $query LIMIT 10;
+```
+
+```python
+# Alternative: FAISS — full PQ control, outside Postgres
+import faiss
+pq = faiss.IndexPQ(1536, 48, 8)  # 48 subvectors × 8 bits = 48 bytes/vector
+pq.train(vectors)                 # needs 10K-100K training samples
+pq.add(vectors)
+# Search via FAISS, join results back to Postgres by ID
+```
+
+<!-- pause -->
+
+| Method | Tool | Compression | Re-rank | Setup |
+|---|---|---|---|---|
+| FP16 | pgvector `halfvec` | 2x | Not needed | One ALTER + INDEX |
+| INT8 (SQ) | pgvectorscale DiskANN | 4x | Automatic | One CREATE INDEX |
+| BQ | pgvector `bit` type | 32x | Manual CTE | One ALTER + INDEX |
+| SBQ (PQ-like) | pgvectorscale `memory_optimized` | 8-16x | Automatic | One CREATE INDEX |
+| PQ (full) | FAISS (external) | 8-64x | Built-in | Separate service |
+
+<!-- end_slide -->
+
+# Appendix: DiskANN How-To in PostgreSQL
+
+**<span style="color: #4EC9B0">pgvectorscale (Timescale)</span>**
+
+```sql
+-- Install the extension
+CREATE EXTENSION IF NOT EXISTS vectorscale;
+
+-- Create a DiskANN index
+CREATE INDEX ON docs
+  USING diskann (embedding vector_cosine_ops)
+  WITH (
+    num_neighbors = 50,    -- graph connectivity (like HNSW M)
+    search_list_size = 100 -- candidates during build
+  );
+
+-- Query — same SQL as HNSW, planner picks diskann
+SELECT id, content FROM docs
+ORDER BY embedding <=> $query
+LIMIT 10;
+
+-- Tune search at query time
+SET diskann.query_search_list_size = 150;
+-- Higher = better recall, slower
+-- Lower  = faster, lower recall
+```
+
+<!-- pause -->
+
+**When to switch from HNSW to DiskANN:**
+
+| Signal | Action |
+|---|---|
+| RAM usage > 60% of instance memory | Time to evaluate DiskANN |
+| Dataset > 20-50M vectors | DiskANN likely cheaper |
+| Latency budget allows 5-15ms (vs 1-5ms HNSW) | DiskANN is a fit |
+| Frequent inserts on large dataset | pgvectorscale handles streaming inserts |
+
+*Key: DiskANN trades ~5-10ms extra latency for 10-30x less RAM. The query SQL doesn't change — only the index type.*
 
 <!-- end_slide -->
