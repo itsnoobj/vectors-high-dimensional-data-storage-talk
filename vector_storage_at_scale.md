@@ -584,28 +584,29 @@ Recall
 
 <!-- pause -->
 
-**1. Do the math first.** 100M × 1536d = 920 GB with HNSW.
-   Know your scale before choosing infrastructure.
+**1. Do the math before you architect.** Run `vectors × dims × 4 (bytes per FP32) × 1.5 (HNSW overhead)`
+   — if it's over 64 GB, you need quantization or DiskANN. Not later. Now.
 
 <!-- pause -->
 
 **2. Quantization is the biggest lever.** BQ + re-rank: 32x compression,
-   92-96% recall. Plan for it from day one.
+   92-96% recall. `halfvec` alone gets you 2x for free. Plan for it from day one.
 
 <!-- pause -->
 
-**3. Filtered search is the hard problem.** Post-filter fails silently.
-   Use partial indexes, partitioning, or iterative scanning.
+**3. Filtered search fails silently.** Post-filter on a vector index can return
+   0 results with no error. Use partial indexes, partitioning, or `iterative_scan`.
 
 <!-- pause -->
 
-**4. Converged vs specialized is a real trade-off.** Data sync tax is real.
-   Evaluate honestly based on your scale and team.
+**4. The cost of the wrong choice is months, not days.** Adding a second database
+   means syncing forever. Skipping quantization means a rebuild at scale.
+   <span style="color: #f9e2af">Make the architecture decision once, with the math in hand.</span>
 
 <!-- pause -->
 
 **5. Measure recall, not just latency.** <span style="color: #f38ba8">A fast wrong answer is worse than
-   a slightly slower right answer.</span>
+   a slightly slower right answer.</span> Add a recall benchmark before you ship.
 
 <!-- end_slide -->
 
