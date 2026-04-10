@@ -295,8 +295,7 @@ Positive → 1, Negative → 0
        ↓
 [1, 0, 1, 0]  → packed bits
 ```
-32x compression. Hamming distance =
-XOR + popcount. Hardware-accelerated.
+32x compression.
 
 <!-- pause -->
 
