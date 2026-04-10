@@ -46,8 +46,6 @@ Month 10: "Maybe we need Pinecone?"
 
 <!-- pause -->
 
-**This talk gives the mental model to make these decisions <span style="color: #a6e3a1">*before* month 8.</span>**
-
 Just the <span style="color: #f9e2af">trade-offs — in plain English.</span>
 
 <!-- end_slide -->
@@ -132,8 +130,7 @@ against *every* vector. <span style="color: #f38ba8">At 100M rows, that's a prob
 
 <!-- column: 0 -->
 
-**Traditional indexes** (B-tree) work on exact ordering: `WHERE id = 42` or `ORDER BY date`.
-There's a clear sort order. Binary search. O(log n). Done.
+**B-tree:** exact ordering, binary search, O(log n)
 
 ![](images/btree.png)
 
@@ -221,10 +218,7 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 
 <!-- pause -->
 
-**The cliff isn't linear.** Going from 64 GB → 920 GB RAM means jumping from
-a single node to a distributed cluster.
-
-<span style="color: #f38ba8">That's not 15x cost — it's 30-50x operational complexity.</span>
+<span style="color: #f38ba8">64 GB → 920 GB = not 15x cost, it's 30-50x operational complexity.</span>
 
 <!-- end_slide -->
 
@@ -254,7 +248,6 @@ Index rebuild at 50M = 3 days, no deploys → 1-2 week production freeze
 **The common thread:** these aren't bad tools — they're <span style="color: #f9e2af">premature decisions
 made without doing the math first.</span>
 
-The next few sections cover the levers to avoid all three.
 
 <!-- end_slide -->
 
@@ -316,8 +309,6 @@ Query → BQ index (RAM, fast)
      → re-rank: compute exact distances, return true top 10
 ```
 
-*<span style="color: #f9e2af">Re-rank = recompute distances with full precision on a small candidate set.</span>*
-
 <!-- end_slide -->
 
 # Quantization: Trading Precision for Scale
@@ -346,7 +337,7 @@ python scripts/quantization_demo.py
 
 **Why BQ + re-rank works:** XOR eliminates 99% of candidates → fetch ~200 full vectors to re-rank.
 
-<span style="color: #f9e2af">*Recall = "of the true top 10, how many did we actually find?" We'll come back to this.*</span>
+<span style="color: #f9e2af">*Recall = "of the true top 10, how many did we actually find?"*</span>
 
 <!-- end_slide -->
 
@@ -380,12 +371,6 @@ python scripts/quantization_demo.py
 
 <!-- pause -->
 
-**What makes this possible:**
-- **Vamana graph** — single-layer, disk-optimized
-- **Medoid start node** — search starts from the most central point
-- **Beam search with PQ** — navigate in RAM, fetch from SSD
-- **Low graph degree** — ~64-128 neighbors, compact on disk
-
 **<span style="color: #f9e2af">How?</span>** Vamana builds edges with two rules:
 - *Short-range* neighbors — nearby points for precision
 - *Long-range* neighbors — distant points for shortcuts
@@ -397,9 +382,6 @@ python scripts/quantization_demo.py
 <!-- end_slide -->
 
 # The Filtered Search Problem
-
-**So far we've solved the *scale* problem.
-But there's a second problem that hits even at small scale.**
 
 <!-- pause -->
 
@@ -507,11 +489,6 @@ LIMIT 10;
 
 <!-- pause -->
 
-**The honest takeaway:**
-- Partial indexes & partitioning = true filters (separate graph per value)
-- iterative_scan = good enough, not perfect
-- Traversal still touches irrelevant nodes
-
 <span style="color: #f38ba8">**This is an active research area.**</span> No database has fully solved it yet.
 
 <!-- end_slide -->
@@ -543,10 +520,7 @@ Combined: Better recall than either alone.
 
 <!-- pause -->
 
-**How:** Run both searches, merge results with Reciprocal Rank Fusion (RRF).
-Most databases and frameworks support this natively or at the application level.
-
-**When building RAG, <span style="color: #f9e2af">almost certainly want hybrid retrieval.</span>**
+**How:** Run both searches, merge with Reciprocal Rank Fusion (RRF).
 
 <!-- end_slide -->
 
@@ -615,9 +589,8 @@ Recall
 
 <!-- pause -->
 
-**4. The cost of the wrong choice is months, not days.** Adding a second database
-   means syncing forever. Skipping quantization means a rebuild at scale.
-   <span style="color: #f9e2af">Make the architecture decision once, with the math in hand.</span>
+**4. The cost of the wrong choice is months, not days.**
+   <span style="color: #f9e2af">Decide once, with the math in hand.</span>
 
 <!-- pause -->
 
@@ -1038,6 +1011,15 @@ LIMIT 10;
 ```
 
 *`k=60` is the standard constant from the RRF paper — dampens high-rank dominance. RRF only cares about rank position, not raw scores, so it works across any two retrieval methods.*
+
+<!-- end_slide -->
+
+# Appendix: DiskANN Key Concepts
+
+- **Vamana graph** — single-layer, disk-optimized (no hierarchical layers like HNSW)
+- **Medoid start node** — search starts from the most central point in the dataset
+- **Beam search with PQ** — navigate compressed graph in RAM, fetch full vectors from SSD
+- **Low graph degree** — ~64-128 neighbors per node, keeps graph compact on disk
 
 <!-- end_slide -->
 
