@@ -1,9 +1,11 @@
 ---
-title: "Storing High-Dimensional Data at Scale"
-sub_title: "The RAM Wall, Quantization, Filtered Search & When to Use What"
-author: "Narrated by: Jeevan"
-date: "April 2026"
+options:
+  implicit_slide_ends: true
 ---
+
+![](images/title-slide.png)
+
+<!-- end_slide -->
 
 # Why This Talk, Why Now
 
