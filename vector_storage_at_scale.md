@@ -640,7 +640,7 @@ Recall
 
 <!-- column: 0 -->
 
-**<span style="color: #f9e2af">Your vectors aren't special. Your architecture decisions are.</span>** 🚀
+**<span style="color: #f9e2af">Vectors aren't special. Architecture decisions are.</span>** 🚀
 
 **Questions?**
 
