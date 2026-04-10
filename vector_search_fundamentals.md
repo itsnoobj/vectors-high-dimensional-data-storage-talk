@@ -908,8 +908,7 @@ Migrate only if you outgrow it.
 📬 **Get in touch:**
 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span>
 
-🌐 **Blog:**
-<span style="color: #89b4fa">https://noobj.me/</span>
+🌐 **I write at** <span style="color: #89b4fa">noobj.me</span> *(a place where others cannot comment)*
 
 <!-- column: 1 -->
 

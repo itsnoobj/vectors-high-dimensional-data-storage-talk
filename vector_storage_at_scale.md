@@ -13,6 +13,8 @@ date: "April 2026"
 
 Every team is adding vector search. Few are planning for what happens next.
 
+The LLM layer is commoditising — the moat isn't the model, **it's your data.** RAG over internal knowledge (Confluence, SharePoint, Teams, emails, codebases) is where you differentiate: better tooling, better dev experience, better customer answers. Vector search isn't an experiment anymore — **it's core infrastructure.**
+
 <!-- pause -->
 
 **The pattern we keep seeing:**
@@ -124,21 +126,37 @@ against *every* vector. <span style="color: #f38ba8">At 100M rows, that's a prob
 
 # Why Vector Indexing Is Different
 
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
 **Traditional indexes** (B-tree) work on exact ordering: `WHERE id = 42` or `ORDER BY date`.
 There's a clear sort order. Binary search. O(log n). Done.
 
-<!-- pause -->
+![](images/btree.png)
 
-**Vector indexes** have no natural sort order. "Closest to this 1536-dimensional point"
-isn't something a B-tree can answer.
+<!-- column: 1 -->
+
+**Vector indexes** have no natural sort order.
+
+```
+A = [0.21, 0.87, 0.14, ..., 0.53]
+B = [0.93, 0.12, 0.38, ..., 0.71]
+C = [0.34, 0.76, 0.22, ..., 0.48]
+```
+Which comes first — A or B? There's no "less than" for 1536 dimensions.
 
 **Exact search = check every vector.** That's too slow at scale.
 
+**But what if we don't need the *exact* closest — just <span style="color: #a6e3a1">*close enough*</span>?**
+
 ![](images/gifs/exact-search-slow.png)
+
+<!-- reset_layout -->
 
 <!-- end_slide -->
 
-# How ANN Indexes Work
+# How ANN (Approximate Nearest Neighbor) Indexes Work
 
 **You need specialized structures to search without checking everything:**
 
@@ -146,7 +164,7 @@ isn't something a B-tree can answer.
 
 <!-- column: 0 -->
 
-**<span style="color: #4EC9B0">IVFFlat</span>** — <span style="color: #f9e2af">Cluster & search</span>
+**<span style="color: #4EC9B0">IVFFlat (Inverted File with Flat Compression)</span>** — <span style="color: #f9e2af">Cluster & search</span>
 
 Divide vectors into clusters (k-means).
 At query time, search only nearest cluster(s).
@@ -158,7 +176,7 @@ then check every restaurant there."*
 
 <!-- column: 1 -->
 
-**<span style="color: #4EC9B0">HNSW</span>** — <span style="color: #f9e2af">Multi-layer graph</span>
+**<span style="color: #4EC9B0">HNSW (Hierarchical Navigable Small World)</span>** — <span style="color: #f9e2af">Multi-layer graph</span>
 
 Build a navigable graph with layers.
 Top = express highways. Bottom = local streets.
@@ -172,6 +190,10 @@ then local roads."*
 
 <!-- pause -->
 
+<span style="color: #a6e3a1">**We're running this in production today.**</span>
+
+<!-- pause -->
+
 <span style="color: #f38ba8">**Both assume vectors live in RAM.**</span> <span style="color: #f9e2af">That's fine at 1M vectors.
 At 100M? Let's do the math.</span>
 
@@ -180,7 +202,7 @@ At 100M? Let's do the math.</span>
 # The RAM Wall
 
 **Everyone wants to build AI on their own data.
-Leadership wants to know why the infrastructure bill just tripled.**
+<span style="color: #f38ba8">Leadership wants to know why the infrastructure bill just tripled.</span>**
 
 ![](images/gifs/this-is-fine.gif)
 
@@ -195,13 +217,14 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 | 100M | 614 GB | ~920 GB | ~$5,000+/mo |
 | 1B | 6.1 TB | ~9.2 TB | 💀 |
 
-*HNSW overhead varies 30-80% depending on M parameter. Using 50% as realistic default.*
+*HNSW overhead varies 30-80% depending on M parameter (max edges per node — higher M = more connections per layer = better recall but more RAM). Using 50% as realistic default.*
 
 <!-- pause -->
 
 **The cliff isn't linear.** Going from 64 GB → 920 GB RAM means jumping from
-a single node to a distributed cluster. <span style="color: #f38ba8">That's not 15x cost —
-it's 30-50x operational complexity.</span>
+a single node to a distributed cluster.
+
+<span style="color: #f38ba8">That's not 15x cost — it's 30-50x operational complexity.</span>
 
 <!-- end_slide -->
 
@@ -324,7 +347,7 @@ python scripts/quantization_demo.py
 | Binary (1-bit) | 192 MB | ~10%* | Fast but imprecise alone |
 | Binary + re-rank | 192 MB + disk | ~99% | The production pattern |
 
-*\*BQ recall without re-rank is model-dependent (75-95%). Re-ranking recovers to 92-96%.*
+*\*BQ recall without re-rank is model-dependent (45-95%). Re-ranking recovers to 92-96%.*
 
 <!-- pause -->
 
@@ -335,7 +358,7 @@ using XOR. Then you only fetch ~200 full vectors from disk to re-rank.
 
 <!-- end_slide -->
 
-# DiskANN: Beyond HNSW
+# DiskANN (Disk-based Approximate Nearest Neighbor): Beyond HNSW
 
 **Quantization shrinks the vectors. But at hundreds of millions of vectors, the graph structure itself still needs significant RAM.**
 
@@ -363,6 +386,16 @@ using XOR. Then you only fetch ~200 full vectors from disk to re-rank.
 *Q-HNSW: quantized index in RAM, full vectors on disk.*
 *Costs: AWS on-demand.*
 
+<!-- pause -->
+
+**What makes this possible:**
+- **Vamana graph** — single-layer, disk-optimized
+- **Medoid start node** — search starts from the most central point
+- **Beam search with PQ** — navigate in RAM, fetch from SSD
+- **Low graph degree** — ~64-128 neighbors, compact on disk
+
+**<span style="color: #f9e2af">How?</span>** Vamana builds edges with two rules: keep *short-range* neighbors (nearby points for precision) and *long-range* neighbors (distant points for shortcuts). Every node gets both. A few long-range hops get you to the right neighborhood, then short-range hops zero in. 🚗 → ✈️ → 🚆 → 🛺
+
 <!-- reset_layout -->
 
 <!-- end_slide -->
@@ -388,14 +421,9 @@ LIMIT 10;
 **⚠️ The vector index only knows about distance —
 it's blind to your metadata.**
 
-Whether it's HNSW, IVFFlat, or DiskANN,
-the index can't natively combine
-"nearest vectors" with "matching metadata"
-in one step.
-
-If only 2% of rows match your filter,
-most ANN candidates get thrown away.
-You asked for 10 results. You might get 0.
+- HNSW, IVFFlat, DiskANN — none can combine "nearest vectors" + "matching metadata" in one step
+- 2% of rows match your filter → most ANN candidates get thrown away
+- Asked for 10 results → might get 0
 
 <!-- end_slide -->
 
@@ -497,10 +525,6 @@ LIMIT 10;
 <!-- end_slide -->
 
 # Now that pgvector handles quantization, DiskANN, and filtered search — do you still need a separate vector DB?
-
-<!-- end_slide -->
-
-# The Architecture Decision
 
 ![](images/architecture-decision.png)
 
@@ -610,24 +634,6 @@ Recall
 
 <!-- end_slide -->
 
-# References
-
-- **DiskANN Paper** — github.com/microsoft/DiskANN
-- **DiskANN on Azure PostgreSQL** — techcommunity.microsoft.com/blog/adforpostgresql/diskann-on-azure-database-for-postgresql-now-generally-available/4414723
-- **HNSW Memory Overhead** — lantern.dev/blog/calculator
-- **pgvector** — github.com/pgvector/pgvector
-- **pgvectorscale (StreamingDiskANN)** — github.com/timescale/pgvectorscale
-- **Embedding Quantization** — huggingface.co/blog/embedding-quantization
-- **Weaviate Rotational Quantization** — weaviate.io/blog/8-bit-rotational-quantization
-- **Elastic BBQ** — elastic.co/search-labs/blog/bbq-implementation-into-use-case
-- **Filtered HNSW** — qdrant.tech/articles/filtrable-hnsw
-- **ParadeDB (BM25 + vector)** — paradedb.com
-- **The Case Against pgvector** — alex-jacobs.com/posts/the-case-against-pgvector
-- **Vector DB Hype is Over** — estuary.dev/blog/the-vector-database-hype-is-over
-- **Matryoshka Embeddings** — platform.openai.com/docs/guides/embeddings
-
-<!-- end_slide -->
-
 # The End
 
 <!-- column_layout: [2, 1] -->
@@ -641,8 +647,7 @@ Recall
 📬 **Get in touch:**
 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span>
 
-🌐 **Blog:**
-<span style="color: #89b4fa">https://noobj.me/</span>
+🌐 **I write at** <span style="color: #89b4fa">noobj.me</span> *(a place where others cannot comment)*
 
 <!-- column: 1 -->
 
@@ -831,9 +836,9 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 | **Model-sensitive?** | <span style="color: #a6e3a1">No</span> | <span style="color: #a6e3a1">No</span> | <span style="color: #a6e3a1">Low</span> | <span style="color: #f9e2af">Medium</span> | <span style="color: #f38ba8">High</span> |
 | **Best for** | Small scale | Easy first win | General purpose | Massive datasets | Speed-critical |
 
-*\*BQ recall without re-rank varies by model (75% for e5-base-v2 to 95% for Cohere-v3, per HuggingFace MTEB benchmarks).*
+*\*BQ recall without re-rank varies by model (45% for e5-base-v2 to 95% for Cohere-v3, per HuggingFace MTEB benchmarks).*
 *Speed multipliers are for distance computation, not additive on top of ANN index speedups.*
-*Sources: huggingface.co/blog/embedding-quantization, weaviate.io/blog/8-bit-rotational-quantization, mongodb.com/blog/post/binary-quantization-rescoring-96-less-memory-faster-search*
+*Sources: [6], [7], [14]*
 
 <!-- end_slide -->
 
@@ -852,7 +857,7 @@ then fetch full FP32 vectors and re-rank to get the true top 10.
 | **When to use** | < 10K vectors | Batch/analytics | Production, < 50M | 50M-1B | Large + hybrid |
 
 *\*HNSW 100M build time assumes parallel builds. Single-threaded can be 5-10x longer.*
-*Sources: milvus.io/blog/diskann-explained, lantern.dev/blog/calculator, ann-benchmarks.com, github.com/microsoft/DiskANN*
+*Sources: [16], [3], [15], [1]*
 
 <!-- end_slide -->
 
@@ -991,3 +996,74 @@ SET diskann.query_search_list_size = 150;
 *Key: DiskANN trades ~5-10ms extra latency for 10-30x less RAM. The query SQL doesn't change — only the index type.*
 
 <!-- end_slide -->
+
+<!-- end_slide -->
+
+# Appendix: BM25 in PostgreSQL (ParadeDB)
+
+```sql
+-- Install the extension
+CREATE EXTENSION pg_search;
+
+-- Create a BM25 index
+CREATE INDEX ON docs USING bm25 (content);
+
+-- Search with real BM25 scoring
+SELECT *, paradedb.score(id) AS bm25_score
+FROM docs
+WHERE content @@@ 'VACUUM deadlock'
+ORDER BY bm25_score DESC LIMIT 10;
+```
+
+*ParadeDB wraps Tantivy (Rust search engine) inside Postgres — proper BM25 with IDF, term frequency saturation, and document length normalization.*
+
+<!-- end_slide -->
+
+# Appendix: Hybrid Search — BM25 + Vector with RRF
+
+**Reciprocal Rank Fusion** — combine rankings without normalizing scores.
+
+```sql
+WITH bm25 AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY paradedb.score(id) DESC) AS rank
+  FROM docs
+  WHERE content @@@ 'VACUUM deadlock'
+  LIMIT 100
+),
+vector AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> $query) AS rank
+  FROM docs
+  ORDER BY embedding <=> $query
+  LIMIT 100
+)
+SELECT COALESCE(b.id, v.id) AS id,
+       COALESCE(1.0/(60 + b.rank), 0)
+     + COALESCE(1.0/(60 + v.rank), 0) AS rrf_score
+FROM bm25 b
+FULL OUTER JOIN vector v ON b.id = v.id
+ORDER BY rrf_score DESC
+LIMIT 10;
+```
+
+*`k=60` is the standard constant from the RRF paper — dampens high-rank dominance. RRF only cares about rank position, not raw scores, so it works across any two retrieval methods.*
+
+<!-- end_slide -->
+
+# References
+
+1. **DiskANN Paper** — github.com/microsoft/DiskANN
+2. **DiskANN on Azure PostgreSQL** — techcommunity.microsoft.com/blog/adforpostgresql/diskann-on-azure-database-for-postgresql-now-generally-available/4414723
+3. **HNSW Memory Overhead** — lantern.dev/blog/calculator
+4. **pgvector** — github.com/pgvector/pgvector
+5. **pgvectorscale (StreamingDiskANN)** — github.com/timescale/pgvectorscale
+6. **Embedding Quantization** — huggingface.co/blog/embedding-quantization
+7. **Weaviate Rotational Quantization** — weaviate.io/blog/8-bit-rotational-quantization
+8. **Elastic BBQ** — elastic.co/search-labs/blog/bbq-implementation-into-use-case
+9. **Filtered HNSW** — qdrant.tech/articles/filtrable-hnsw
+10. **ParadeDB (BM25 + vector)** — paradedb.com
+11. **The Case Against pgvector** — alex-jacobs.com/posts/the-case-against-pgvector
+12. **Vector DB Hype is Over** — estuary.dev/blog/the-vector-database-hype-is-over
+13. **Matryoshka Embeddings** — platform.openai.com/docs/guides/embeddings
+14. **MongoDB Binary Quantization** — mongodb.com/blog/post/binary-quantization-rescoring-96-less-memory-faster-search
+15. **ANN Benchmarks** — ann-benchmarks.com
+16. **DiskANN Explained** — milvus.io/blog/diskann-explained
