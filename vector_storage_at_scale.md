@@ -394,7 +394,11 @@ using XOR. Then you only fetch ~200 full vectors from disk to re-rank.
 - **Beam search with PQ** — navigate in RAM, fetch from SSD
 - **Low graph degree** — ~64-128 neighbors, compact on disk
 
-**<span style="color: #f9e2af">How?</span>** Vamana builds edges with two rules: keep *short-range* neighbors (nearby points for precision) and *long-range* neighbors (distant points for shortcuts). Every node gets both. A few long-range hops get you to the right neighborhood, then short-range hops zero in. 🚗 → ✈️ → 🚆 → 🛺
+**<span style="color: #f9e2af">How?</span>** Vamana builds edges with two rules:
+- *Short-range* neighbors — nearby points for precision
+- *Long-range* neighbors — distant points for shortcuts
+- Every node gets both → any node reachable in ~10-20 hops
+- 🚗 → ✈️ → 🚆 → 🛺
 
 <!-- reset_layout -->
 
