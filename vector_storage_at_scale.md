@@ -13,7 +13,9 @@ date: "April 2026"
 
 Every team is adding vector search. Few are planning for what happens next.
 
-The LLM layer is commoditising — the moat isn't the model, **it's your data.** RAG over internal knowledge (Confluence, SharePoint, Teams, emails, codebases) is where you differentiate: better tooling, better dev experience, better customer answers. Vector search isn't an experiment anymore — **it's core infrastructure.**
+- LLM layer is commoditising — the moat isn't the model, **it's data**
+- RAG over internal knowledge — Confluence, SharePoint, Teams, emails, codebases
+- Better tooling, better dev experience, better customer answers
 
 <!-- pause -->
 
@@ -33,7 +35,7 @@ Month 9:  "Add per-tenant filtering"
           → recall silently drops to 40% 🔇
 
 Month 10: "Maybe we need Pinecone?"
-          → now you're syncing two databases forever 🔄
+          → now syncing two databases forever 🔄
 ```
 
 <!-- column: 1 -->
@@ -44,7 +46,7 @@ Month 10: "Maybe we need Pinecone?"
 
 <!-- pause -->
 
-**This talk gives you the mental model to make these decisions <span style="color: #a6e3a1">*before* month 8.</span>**
+**This talk gives the mental model to make these decisions <span style="color: #a6e3a1">*before* month 8.</span>**
 
 Just the <span style="color: #f9e2af">trade-offs — in plain English.</span>
 
@@ -57,17 +59,17 @@ Just the <span style="color: #f9e2af">trade-offs — in plain English.</span>
 <!-- column: 0 -->
 
 ## Embeddings & Indexing
-*You can't B-tree your way out of this*
+*Can't B-tree the way out of this*
 - Primer on semantic search
 - Why vector indexing is fundamentally different
 
 ## The RAM Wall
 *100M vectors = 920 GB RAM. Plan ahead or pay later.*
-- The math that breaks your budget
+- The math that breaks the budget
 - The CFO conversation nobody wants
 
 ## Quantization
-*You don't need full precision to search. Only to rank.*
+*Full precision isn't needed to search. Only to rank.*
 - Scalar, Binary, Product — intuition
 - The "coarse + re-rank" pattern
 - 💻 Demo: 32x compression, high recall
@@ -87,7 +89,7 @@ Just the <span style="color: #f9e2af">trade-offs — in plain English.</span>
 - Hybrid search (BM25 + vectors)
 
 ## Decision Matrix & Takeaways
-*Start with your existing DB. Migrate only if you outgrow it.*
+*Start with the existing DB. Migrate only when it's outgrown.*
 - What to use when — in plain English
 - What to do Monday morning
 
@@ -119,7 +121,7 @@ ORDER BY embedding <=> query_embedding   -- cosine distance
 LIMIT 10;
 ```
 
-Simple query. But to answer it, the database must compare your query
+Simple query. But to answer it, the database must compare the query
 against *every* vector. <span style="color: #f38ba8">At 100M rows, that's a problem.</span>
 
 <!-- end_slide -->
@@ -158,7 +160,7 @@ Which comes first — A or B? There's no "less than" for 1536 dimensions.
 
 # How ANN (Approximate Nearest Neighbor) Indexes Work
 
-**You need specialized structures to search without checking everything:**
+**Specialized structures needed to search without checking everything:**
 
 <!-- column_layout: [1, 1] -->
 
@@ -166,8 +168,8 @@ Which comes first — A or B? There's no "less than" for 1536 dimensions.
 
 **<span style="color: #4EC9B0">IVFFlat (Inverted File with Flat Compression)</span>** — <span style="color: #f9e2af">Cluster & search</span>
 
-Divide vectors into clusters (k-means).
-At query time, search only nearest cluster(s).
+- **Build:** Divide vectors into clusters (k-means)
+- **Query:** Search only nearest cluster(s)
 
 *"Go to the Italian district,
 then check every restaurant there."*
@@ -178,8 +180,8 @@ then check every restaurant there."*
 
 **<span style="color: #4EC9B0">HNSW (Hierarchical Navigable Small World)</span>** — <span style="color: #f9e2af">Multi-layer graph</span>
 
-Build a navigable graph with layers.
-Top = express highways. Bottom = local streets.
+- **Build:** Navigable graph with layers
+- **Query:** Top = express highways, bottom = local streets
 
 *"GPS navigation — highways first,
 then local roads."*
@@ -217,8 +219,6 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 | 100M | 614 GB | ~920 GB | ~$5,000+/mo |
 | 1B | 6.1 TB | ~9.2 TB | 💀 |
 
-*HNSW overhead varies 30-80% depending on M parameter (max edges per node — higher M = more connections per layer = better recall but more RAM). Using 50% as realistic default.*
-
 <!-- pause -->
 
 **The cliff isn't linear.** Going from 64 GB → 920 GB RAM means jumping from
@@ -237,29 +237,24 @@ a single node to a distributed cluster.
 <!-- pause -->
 
 **1. <span style="color: #f38ba8">"Just use HNSW, it's the best"</span>**
-Works at 5M. At 80M, you need 750 GB RAM across a cluster.
-→ ~$5K/mo infra + 2 engineers firefighting OOMs
+80M vectors = 750 GB RAM → ~$5K/mo + OOM firefighting
 
 <!-- pause -->
 
 **2. <span style="color: #f38ba8">"Let's add Pinecone alongside Postgres"</span>**
-Now you sync two systems. Every schema change = two deploys.
-Stale vectors cause silent recall drops.
-→ +$2K/mo Pinecone + ongoing sync bugs
+Two systems to sync, stale vectors, silent recall drops → +$2K/mo + sync bugs
 
 <!-- pause -->
 
 **3. <span style="color: #f38ba8">"We'll optimize later"</span>**
-No quantization planned. Index rebuild at 50M takes 3 days.
-Can't ship features while rebuilding.
-→ 1-2 week migration project, production freeze
+Index rebuild at 50M = 3 days, no deploys → 1-2 week production freeze
 
 <!-- pause -->
 
 **The common thread:** these aren't bad tools — they're <span style="color: #f9e2af">premature decisions
 made without doing the math first.</span>
 
-The next few sections give you the levers to avoid all three.
+The next few sections cover the levers to avoid all three.
 
 <!-- end_slide -->
 
@@ -271,7 +266,7 @@ The next few sections give you the levers to avoid all three.
 
 # Quantization: The Three Approaches
 
-**Core idea:** You don't need 32-bit precision for the *search* step.
+**Core idea:** 32-bit precision isn't needed for the *search* step.
 Only for the final *ranking* step.
 
 <!-- column_layout: [1, 1] -->
@@ -347,12 +342,9 @@ python scripts/quantization_demo.py
 | Binary (1-bit) | 192 MB | ~10%* | Fast but imprecise alone |
 | Binary + re-rank | 192 MB + disk | ~99% | The production pattern |
 
-*\*BQ recall without re-rank is model-dependent (45-95%). Re-ranking recovers to 92-96%.*
-
 <!-- pause -->
 
-**Why BQ + re-rank works:** The binary pass eliminates 99% of candidates
-using XOR. Then you only fetch ~200 full vectors from disk to re-rank.
+**Why BQ + re-rank works:** XOR eliminates 99% of candidates → fetch ~200 full vectors to re-rank.
 
 <span style="color: #f9e2af">*Recall = "of the true top 10, how many did we actually find?" We'll come back to this.*</span>
 
@@ -411,7 +403,7 @@ But there's a second problem that hits even at small scale.**
 
 <!-- pause -->
 
-<span style="color: #f9e2af">**In production, you almost never search the entire database.**</span>
+<span style="color: #f9e2af">**In production, almost never searching the entire database.**</span>
 
 ```sql
 SELECT * FROM products
@@ -423,10 +415,10 @@ LIMIT 10;
 <!-- pause -->
 
 **⚠️ The vector index only knows about distance —
-it's blind to your metadata.**
+it's blind to the metadata.**
 
 - HNSW, IVFFlat, DiskANN — none can combine "nearest vectors" + "matching metadata" in one step
-- 2% of rows match your filter → most ANN candidates get thrown away
+- 2% of rows match the filter → most ANN candidates get thrown away
 - Asked for 10 results → might get 0
 
 <!-- end_slide -->
@@ -439,7 +431,7 @@ it's blind to your metadata.**
 
 # The Fixes: Three Approaches
 
-**1. <span style="color: #4EC9B0">Iterative scan</span>** — keep scanning until you have enough
+**1. <span style="color: #4EC9B0">Iterative scan</span>** — keep scanning until enough results
 
 ```
 HNSW returns 40 candidates → filter → only 4 match → not enough!
@@ -447,8 +439,7 @@ HNSW returns 40 candidates → filter → only 4 match → not enough!
   → scan 40 more → filter → 3 more match → now we have 10 ✓
 ```
 
-Works for any filter. But the graph is built from ALL rows —
-you're walking through irrelevant vectors to find matching ones. Good enough, not perfect.
+Works for any filter. But graph walks through all rows — including irrelevant ones. Good enough, not perfect.
 
 <!-- pause -->
 
@@ -466,8 +457,7 @@ WHERE metadata->>'category' = 'science'
 ORDER BY embedding <=> query_embedding LIMIT 10;
 ```
 
-Truly efficient — but one index per value. Works when the column has few distinct values
-(e.g., 5 categories, 3 statuses, 10 regions — not 100K user IDs).
+One index per value — great for low cardinality (5 categories, 10 regions), not 100K user IDs.
 
 <!-- pause -->
 
@@ -504,8 +494,6 @@ LIMIT 10;
 
 <!-- pause -->
 
-**Key:** Ensure your database keeps scanning until LIMIT is satisfied, not just one pass.
-
 <!-- end_slide -->
 
 # Filtered Search: What to Use When
@@ -520,15 +508,15 @@ LIMIT 10;
 <!-- pause -->
 
 **The honest takeaway:**
-- Partial indexes & partitioning = only true filters (separate graph per value)
-- iterative_scan, payload-aware traversal = good enough, not perfect
-- Graph was built from all vectors — traversal still touches irrelevant nodes
+- Partial indexes & partitioning = true filters (separate graph per value)
+- iterative_scan = good enough, not perfect
+- Traversal still touches irrelevant nodes
 
 <span style="color: #f38ba8">**This is an active research area.**</span> No database has fully solved it yet.
 
 <!-- end_slide -->
 
-# Now that pgvector handles quantization, DiskANN, and filtered search — do you still need a separate vector DB?
+# Now that pgvector handles quantization, DiskANN, and filtered search — is a separate vector DB still needed?
 
 ![](images/architecture-decision.png)
 
@@ -545,10 +533,10 @@ LIMIT 10;
 **In production RAG, the best retrieval combines keyword and semantic search.**
 
 ```
-Query: "PostgreSQL VACUUM deadlock error"
+Query: "how to handle payment refund timeout"
 
-BM25 (keyword):  Finds exact term "VACUUM deadlock" → precise
-Vector (semantic): Finds "autovacuum lock contention" → broader
+BM25 (keyword):  Finds exact term "refund timeout" → precise
+Vector (semantic): Finds "payment reversal retry logic" → broader
 
 Combined: Better recall than either alone.
 ```
@@ -558,11 +546,11 @@ Combined: Better recall than either alone.
 **How:** Run both searches, merge results with Reciprocal Rank Fusion (RRF).
 Most databases and frameworks support this natively or at the application level.
 
-**If you're building RAG, you <span style="color: #f9e2af">almost certainly want hybrid retrieval.</span>**
+**When building RAG, <span style="color: #f9e2af">almost certainly want hybrid retrieval.</span>**
 
 <!-- end_slide -->
 
-# Recall vs Latency: Know Your Trade-off
+# Recall vs Latency: Know the Trade-off
 
 *Recall = "of the true top 10 results, how many did we actually find?"*
 
@@ -591,7 +579,7 @@ Recall
 
 # Decision Matrix
 
-| Your situation | What to do | Real-world example |
+| Situation | What to do | Real-world example |
 |---------------|-----------|-------------------|
 | Just starting, < 1M docs | pgvector + HNSW. Done. | Internal knowledge base, support bot |
 | Growing, 1-10M docs, need filters | pgvector + `iterative_scan` + partial indexes | E-commerce catalog, multi-category search |
@@ -600,11 +588,11 @@ Recall
 | Multi-tenant SaaS | Partition by tenant, index per partition | B2B platform, per-customer search |
 | Keyword + semantic search | Add BM25 (ParadeDB or app-level RRF) | Customer support RAG, code search |
 | Sub-5ms at 100M+ | Evaluate Qdrant or Pinecone | Real-time recommendations, fraud detection |
-| Already on Mongo or Elastic | Use their native vector support | Don't add another DB to your stack |
+| Already on Mongo or Elastic | Use their native vector support | Don't add another DB to the stack |
 
 <!-- pause -->
 
-**<span style="color: #f9e2af">Start with your existing database.</span> Migrate the vector layer only if you outgrow it.**
+**<span style="color: #f9e2af">Start with the existing database.</span> Migrate the vector layer only when it's outgrown.**
 
 <!-- end_slide -->
 
@@ -612,13 +600,13 @@ Recall
 
 <!-- pause -->
 
-**1. Do the math before you architect.** Run `vectors × dims × 4 (bytes per FP32) × 1.5 (HNSW overhead)`
-   — if it's over 64 GB, you need quantization or DiskANN. Not later. Now.
+**1. Do the math before architecting.** Run `vectors × dims × 4 (bytes per FP32) × 1.5 (HNSW overhead)`
+   — if it's over 64 GB, quantization or DiskANN is needed. Not later. Now.
 
 <!-- pause -->
 
 **2. Quantization is the biggest lever.** BQ + re-rank: 32x compression,
-   92-96% recall. FP16 gets you 2x with near-zero recall loss. Plan for it from day one.
+   92-96% recall. FP16 gets 2x with near-zero recall loss. Plan for it from day one.
 
 <!-- pause -->
 
@@ -634,7 +622,7 @@ Recall
 <!-- pause -->
 
 **5. Measure recall, not just latency.** <span style="color: #f38ba8">A fast wrong answer is worse than
-   a slightly slower right answer.</span> Add a recall benchmark before you ship.
+   a slightly slower right answer.</span> Add a recall benchmark before shipping.
 
 <!-- end_slide -->
 
@@ -735,7 +723,7 @@ A cross-encoder reads them *together* — every query word attends to every doc 
 *Cross-encoder reads the context and knows they're different.*
 
 **The cost:** Cross-encoder runs inference per (query, doc) pair. Can't precompute.
-That's why you only run it on ~100 candidates, not millions.
+That's why it's only run on ~100 candidates, not millions.
 
 <!-- end_slide -->
 
@@ -767,7 +755,7 @@ That's why you only run it on ~100 candidates, not millions.
 **Analogy: Instead of storing the whole shape, store a Lego instruction manual.**
 
 **What's a codebook?** A pre-trained dictionary of 256 "representative shapes" (centroids)
-per slice — built by running k-means on your data. Think of it as a box of 256 Lego bricks.
+per slice — built by running k-means on the data. Think of it as a box of 256 Lego bricks.
 Every possible slice gets matched to its closest brick.
 
 ![](images/pq-intuition.png)
@@ -787,7 +775,7 @@ Every possible slice gets matched to its closest brick.
 No floating-point math. Just table lookups and additions.
 
 **The catch:** Bricks are approximations. Distance is estimated, not exact.
-That's why you re-rank the top candidates with full-precision vectors.
+That's why re-ranking the top candidates with full-precision vectors is needed.
 
 <!-- end_slide -->
 
@@ -1015,7 +1003,7 @@ CREATE INDEX ON docs USING bm25 (content);
 -- Search with real BM25 scoring
 SELECT *, paradedb.score(id) AS bm25_score
 FROM docs
-WHERE content @@@ 'VACUUM deadlock'
+WHERE content @@@ 'payment refund timeout'
 ORDER BY bm25_score DESC LIMIT 10;
 ```
 
@@ -1031,7 +1019,7 @@ ORDER BY bm25_score DESC LIMIT 10;
 WITH bm25 AS (
   SELECT id, ROW_NUMBER() OVER (ORDER BY paradedb.score(id) DESC) AS rank
   FROM docs
-  WHERE content @@@ 'VACUUM deadlock'
+  WHERE content @@@ 'payment refund timeout'
   LIMIT 100
 ),
 vector AS (
