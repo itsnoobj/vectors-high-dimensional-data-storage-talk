@@ -211,15 +211,24 @@ Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 
 # 💻 Demo: Semantic Search End-to-End
 
+**Pre-seed** *(run once before the talk):*
 ```bash
-python scripts/semantic_search_demo.py
+python scripts/seed_demo_docs.py
 ```
 
 <!-- pause -->
 
-- 10 PostgreSQL docs → embedded into 384d vectors
-- Query: *"how to find and fix slow database queries"*
-- Returns matches by **meaning**, not keywords
+**Step 1:** What's in the table?
+```sql
+SELECT id, content FROM docs_demo;
+```
+
+<!-- pause -->
+
+**Step 2:** Search by meaning:
+```bash
+python scripts/search_demo.py "how to find and fix slow queries"
+```
 
 <!-- end_slide -->
 
