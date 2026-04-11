@@ -149,10 +149,10 @@ Not random numbers — numbers that *capture meaning*.
 
 <!-- pause -->
 
-**Analogy: GPS coordinates for meaning**
+**Analogy:** 📍 GPS coordinates for meaning
 
-Just like GPS turns "Eiffel Tower" into `(48.85, 2.29)` and
-"Arc de Triomphe" into `(48.87, 2.29)` — close on a map because they're close in Paris —
+Just like GPS turns "India Gate" into `(28.61, 77.22)` and
+"Rashtrapati Bhavan" into `(28.61, 77.19)` — close on a map because they're close in Delhi —
 
 an embedding model places "pizza" and "great food" close together
 in a 384-dimensional "meaning space."
@@ -199,8 +199,6 @@ Vector B = [0.3, 0.7, 0.2, ... 384 nums]
 
 Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 ```
-
-<!-- pause -->
 
 **That's Euclidean distance.
 But there are better options for text...**
@@ -348,6 +346,10 @@ Sort these? By which number? 🤷
 
 <!-- pause -->
 
+<span style="color: #f9e2af">**If not exact... what if we search *approximately*?**</span>
+
+<!-- pause -->
+
 **We need a different kind of index entirely.**
 
 <!-- end_slide -->
@@ -369,11 +371,11 @@ ANN search:    ███░░░░░░░░░░░░░░░░  ~5% sc
 
 <!-- pause -->
 
-**Analogy:** Finding a DSA book in a huge library 📚
+**Analogy:** 📦 Finding a delivery address in a city
 
-- **No index:** Check every shelf in every aisle → 3 hours 🐌
-- **With index:** Go to the CS section, check there → 10 minutes ⚡
-- **The catch:** This index is *approximate* — you might miss one book shelved wrong
+- **Exact search:** Check every house in every street → hours 🐌
+- **With pincode:** Go to the right area, check nearby streets → minutes ⚡
+- **The catch:** Might miss a house on the border of two pincodes
 
 <!-- end_slide -->
 
@@ -395,7 +397,7 @@ Let's look at each one...
 
 **Build:** Divide vectors into groups (clusters)
 
-*"Organize restaurants by neighborhood"* 🏘️
+*"Supermarket aisles — dairy, snacks, spices"* 🛒
 
 ![](images/gifs/clustering.gif)
 
@@ -403,7 +405,7 @@ Let's look at each one...
 
 **Query:** Search only the nearest group(s)
 
-*"Go to the Italian district, check there"* 🍝
+*"Need butter? Go to dairy aisle, skip the rest"* 🧈
 
 ![](images/ivfflat.png)
 
@@ -520,11 +522,11 @@ then local roads to the exact address.*
 
 | | IVFFlat | HNSW |
 |---|---|---|
-| **Speed** | Fast (50-100x vs brute force) | Faster (70-150x vs brute force) |
-| **Accuracy** | ~90-95% recall | ~95-99% recall |
-| **Build time** | Fast (~30-60s for 50K) | Slower (~2-5 min for 50K) |
-| **Index size** | Smaller | Larger (graph overhead) |
-| **Inserts** | Degrades over time | Handles well |
+| **Speed** | <span style="color: #a6e3a1">Fast (50-100x)</span> | <span style="color: #a6e3a1">Faster (70-150x)</span> |
+| **Accuracy** | <span style="color: #f9e2af">~90-95% recall</span> | <span style="color: #a6e3a1">~95-99% recall</span> |
+| **Build time** | <span style="color: #a6e3a1">Fast (~30-60s for 50K)</span> | <span style="color: #f9e2af">Slower (~2-5 min for 50K)</span> |
+| **Index size** | <span style="color: #a6e3a1">Smaller</span> | <span style="color: #f9e2af">Larger (graph overhead)</span> |
+| **Inserts** | <span style="color: #f38ba8">Degrades over time</span> | <span style="color: #a6e3a1">Handles well</span> |
 
 <!-- column: 2 -->
 
@@ -695,12 +697,6 @@ The sharp original picks the winner.
 python scripts/quantization_demo.py
 ```
 
-<!-- pause -->
-
-**What we'll see:** BQ compresses 10K vectors
-by 32x, then re-ranking on ~200 candidates
-recovers ~99% recall.
-
 <!-- end_slide -->
 
 # Beyond RAM: <span style="color: #4EC9B0">Disk-Based Indexes</span>
@@ -711,7 +707,7 @@ recovers ~99% recall.
 
 <!-- column: 0 -->
 
-<span style="color: #4EC9B0">**DiskANN**</span> (Microsoft Research, used in Bing):
+<span style="color: #4EC9B0">**DiskANN**</span> (used in Serach Engines for that AI answer section):
 
 ```
 RAM:  Compressed graph + tiny codes
@@ -752,61 +748,19 @@ Doubling data = ~1 extra hop, not 2x work
 
 # Chapter 5: Production Reality
 
-**You've got embeddings, indexes, and scale figured out.
-But production has two more surprises.**
+<!-- pause -->
+
+**Surprise 1:** Real queries have filters → vector index is blind to `WHERE tenant_id = 42`
 
 <!-- pause -->
 
-**Surprise 1:** Real queries have filters.
-**Surprise 2:** Keywords still matter.
-
-<!-- end_slide -->
-
-# The <span style="color: #f38ba8">Filtered Search</span> Trap
-
-**In production, you almost never search the entire database:**
-
-```sql
-SELECT * FROM products
-WHERE tenant_id = 42 AND category = 'electronics'
-ORDER BY distance(embedding, query)
-LIMIT 10
-```
+**Surprise 2:** Keywords still matter → combine vector + keyword search (hybrid)
 
 <!-- pause -->
 
-**The problem:** Your vector index only knows about distance.
-It's blind to `tenant_id` and `category`.
+**Surprise 3:** <span style="color: #f38ba8">Filtered search fails silently</span> — post-filter returns too few, pre-filter falls back to brute force
 
-<!-- end_slide -->
-
-# Pre-Filter vs Post-Filter: Both Fail
-
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
-![](images/filtered-search-problem.png)
-
-<!-- column: 1 -->
-
-<span style="color: #f38ba8">**Post-filter:**</span>
-```
-ANN top 100 → filter → only 2 match!
-You asked for 10. You got 2. 😬
-```
-
-<span style="color: #f38ba8">**Pre-filter:**</span>
-```
-Filter to 200 docs → ANN useless
-Falls back to brute force.
-```
-
-<!-- pause -->
-
-**Solutions exist** (iterative scanning,
-partial indexes, partitioning) but <span style="color: #f38ba8">this
-is the #1 gotcha in production.</span>
+*More on filtered search in the bonus section if we have time.*
 
 <!-- end_slide -->
 
@@ -817,20 +771,16 @@ is the #1 gotcha in production.</span>
 Query: <span style="color: #f9e2af">"how to handle user authentication timeout"</span>
 
 ```
-1. Keyword (BM25):
-   Finds "Authentication timeout error handling guide"
-   → Exact match on the keywords
+Keyword (BM25):  "Authentication timeout error handling guide"
+                 → exact match on keywords
 
-2. Vector search:
-   Finds "Session expiry and token refresh best practices"
-   → Semantically related, different words
+Vector search:   "Session expiry and token refresh best practices"
+                 → semantically related, different words
 
 Combined → Better recall than either alone
 ```
 
 <!-- pause -->
-
-**If you're building RAG or search, you almost certainly want hybrid retrieval.**
 
 Combine with <span style="color: #4EC9B0">Reciprocal Rank Fusion (RRF)</span>:
 - *If two friends both recommend the same restaurant, it's probably good* 🍽️
@@ -860,9 +810,7 @@ Migrate only if you outgrow it.
 
 <!-- column: 1 -->
 
-![](images/data-sync-tax.png)
-
-<span style="color: #f38ba8">The "data sync tax" is real.</span>
+![](images/architecture-decision.png)
 
 <!-- end_slide -->
 
@@ -908,7 +856,10 @@ Migrate only if you outgrow it.
 📬 **Get in touch:**
 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span>
 
-🌐 **I write at** <span style="color: #89b4fa">noobj.me</span> *(a place where others cannot comment)*
+🌐 **I write at** <span style="color: #89b4fa">noobj.me</span>
+
+📎 **Part 2:** `vector_storage_at_scale.md` in the same repo
+*(RAM wall, quantization, DiskANN, filtered search — recording coming soon)*
 
 <!-- column: 1 -->
 
@@ -948,6 +899,49 @@ Migrate only if you outgrow it.
 ```
 
 <!-- column: 2 -->
+
+<!-- end_slide -->
+
+# Bonus: The <span style="color: #f38ba8">Filtered Search</span> Trap
+
+**In production, almost never searching the entire database:**
+
+```sql
+SELECT * FROM products
+WHERE tenant_id = 42 AND category = 'electronics'
+ORDER BY distance(embedding, query)
+LIMIT 10
+```
+
+<!-- pause -->
+
+The vector index is blind to `tenant_id` and `category`.
+
+<!-- pause -->
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+![](images/filtered-search-problem.png)
+
+<!-- column: 1 -->
+
+<span style="color: #f38ba8">**Post-filter:**</span>
+```
+ANN top 100 → filter → only 2 match!
+Asked for 10. Got 2. 😬
+```
+
+<span style="color: #f38ba8">**Pre-filter:**</span>
+```
+Filter to 200 docs → ANN useless
+Falls back to brute force.
+```
+
+<!-- pause -->
+
+**Solutions:** iterative scanning, partial indexes, partitioning — but <span style="color: #f38ba8">this is the #1 gotcha in production.</span>
 
 <!-- end_slide -->
 
