@@ -796,6 +796,8 @@ Migrate only when it's outgrown.
 
 <!-- column: 1 -->
 
+![](images/architecture-decision.png)
+
 ```
 Recall (of true top 10, how many found?)
 100% │       ●──── Brute force
