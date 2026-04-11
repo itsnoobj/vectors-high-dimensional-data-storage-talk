@@ -899,7 +899,7 @@ Recall (of true top 10, how many found?)
 
 <!-- end_slide -->
 
-# Bonus: The <span style="color: #f38ba8">Filtered Search</span> Trap
+# If We Have Time: The <span style="color: #f38ba8">Filtered Search</span> Trap
 
 **In production, almost never searching the entire database:**
 
