@@ -259,19 +259,19 @@ But there are better options for text...**
 
 **This is semantic search.** <span style="color: #f9e2af">No keyword matching. Pure meaning.</span>
 
-<!-- column_layout: [1, 1] -->
+<!-- end_slide -->
 
-<!-- column: 0 -->
+# 💻 Demo: Semantic Search End-to-End
 
-![](images/gifs/measuring.gif)
-
-<!-- column: 1 -->
+```bash
+python scripts/semantic_search_demo.py
+```
 
 <!-- pause -->
 
-**⚠️ Your embedding model matters:**
-- Quality varies wildly by model
-- Benchmark on YOUR data
+- 10 PostgreSQL docs → embedded into 384d vectors
+- Query: *"how to find and fix slow database queries"*
+- Returns matches by **meaning**, not keywords
 
 <!-- end_slide -->
 
@@ -314,6 +314,8 @@ WHERE email = 'alice@example.com';
 ```
 
 B-tree index → binary search. Fast.
+
+![](images/btree.png)
 
 <!-- pause -->
 
@@ -693,6 +695,14 @@ The sharp original picks the winner.
 
 &nbsp;
 
+**See the transformation:**
+```bash
+python scripts/quantization_intro.py
+```
+
+<!-- pause -->
+
+**See it at scale (10K vectors):**
 ```bash
 python scripts/quantization_demo.py
 ```
