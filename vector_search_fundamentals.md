@@ -90,8 +90,8 @@ and what breaks at production scale.**
 
 <!-- pause -->
 
-Human: instantly similar.
-Computer: two completely different strings.
+🧠 instantly similar.
+🖥️ two completely different strings.
 
 <!-- pause -->
 
