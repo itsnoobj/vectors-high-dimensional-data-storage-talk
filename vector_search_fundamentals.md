@@ -175,17 +175,7 @@ Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 
 # Three Ways to Measure Distance
 
-<!-- column_layout: [1, 4, 1] -->
-
-<!-- column: 0 -->
-
-<!-- column: 1 -->
-
 ![](images/distance-methods.png)
-
-<!-- column: 2 -->
-
-<!-- reset_layout -->
 
 <!-- pause -->
 
