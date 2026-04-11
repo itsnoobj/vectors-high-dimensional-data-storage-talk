@@ -132,15 +132,7 @@ in a 384-dimensional "meaning space."
 
 # 💻 Demo: See It In Action
 
-**Let's prove that similar meaning → similar numbers:**
-
-```bash
-python scripts/embedding_intro.py
-```
-
-<!-- pause -->
-
-**Compare any two sentences:**
+**Similar meaning → similar numbers. Let's prove it:**
 
 ```bash
 python scripts/compare.py
