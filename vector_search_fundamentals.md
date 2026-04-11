@@ -90,12 +90,12 @@ and what breaks at production scale.**
 
 <!-- pause -->
 
-A human instantly knows these are similar.
-A computer sees two completely different strings of characters.
+Human: instantly similar.
+Computer: two completely different strings.
 
 <!-- pause -->
 
-**So how do we teach a machine that these mean the same thing?**
+**How do we bridge that gap?**
 
 ![](images/gifs/mind-blown.gif)
 
@@ -104,7 +104,6 @@ A computer sees two completely different strings of characters.
 # <span style="color: #f9e2af">Embeddings:</span> Text → Numbers That Capture Meaning
 
 **The problem:** Computers compare numbers easily (`32°C vs 30°C = 2°C`) but can't compare text.
-
 **The breakthrough:** Turn text into numbers that *capture meaning*.
 
 <!-- pause -->
@@ -172,8 +171,7 @@ Vector B = [0.3, 0.7, 0.2, ... 384 nums]
 Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 ```
 
-**That's Euclidean distance.
-But there are better options for text...**
+**That's Euclidean distance. Better options exist for text...**
 
 <!-- column: 1 -->
 
@@ -203,7 +201,7 @@ But there are better options for text...**
 
 <!-- pause -->
 
-**For text search, <span style="color: #a6e3a1">cosine is king.</span>** It cares about
+**For text search, <span style="color: #a6e3a1">cosine is king.</span>** Cares about
 *direction* (meaning), not *magnitude* (length).
 
 <!-- end_slide -->
@@ -300,8 +298,7 @@ LIMIT 10;
 
 No natural sort order for "closest to
 this 384-dimensional point."
-B-trees need linear ordering.
-<span style="color: #f38ba8">Vectors don't have one.</span>
+B-trees need linear ordering. <span style="color: #f38ba8">Vectors don't.</span>
 
 <!-- column: 1 -->
 
@@ -438,7 +435,7 @@ At real scale:
 <span style="color: #4EC9B0">**HNSW**</span> = Hierarchical Navigable Small World
 
 Build a navigable graph with layers.
-Top layers = express highways. Bottom layer = local streets.
+Top = express highways. Bottom = local streets.
 
 *"GPS navigation — highways first, then local roads to the destination."* 🗺️
 
@@ -541,10 +538,10 @@ LIMIT 10
 
 <!-- pause -->
 
-**Why?** ANN indexes are built to find the <span style="color: #f9e2af">top K nearest</span> — they stop early
-once they have K good candidates. No K = no early stopping = no index.
+**Why?** ANN indexes find the <span style="color: #f9e2af">top K nearest</span> — they stop early
+once they have K candidates. No K = no early stopping = no index.
 
-*LIMIT here isn't pagination — it's telling the search algorithm "I only need the best 10."*
+*LIMIT isn't pagination — it tells the algorithm "only need the best 10."*
 
 <!-- pause -->
 
@@ -558,7 +555,7 @@ once they have K good candidates. No K = no early stopping = no index.
 
 **ANN indexes are fast. But they assume <span style="color: #f38ba8">vectors live in RAM.</span>**
 
-That's fine at 1M vectors. At 100M? Let's do the math.
+Fine at 1M vectors. At 100M? Let's do the math.
 
 ![](images/gifs/math-lady.gif)
 
@@ -758,7 +755,7 @@ Doubling data = ~1 extra hop, not 2x work
 
 # <span style="color: #a6e3a1">Hybrid Search:</span> Best of Both Worlds
 
-**Vector search finds meaning. Keyword search finds exact terms. Combine them.**
+**Vector search finds meaning. Keyword search finds exact terms.**
 
 Query: <span style="color: #f9e2af">"how to handle user authentication timeout"</span>
 
