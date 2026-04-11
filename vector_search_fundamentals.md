@@ -31,7 +31,7 @@ Month 9:  "Add per-tenant filtering"
           → recall silently drops to 40% 🔇
 
 Month 10: "Maybe we need a vector DB?"
-          → now you're syncing two databases forever 🔄
+          → now syncing two databases forever 🔄
 ```
 
 <!-- column: 1 -->
@@ -42,14 +42,14 @@ Month 10: "Maybe we need a vector DB?"
 
 <!-- pause -->
 
-**This talk gives you the mental model to make these decisions *before* month 8.**
+**This talk gives the mental model to make these decisions *before* month 8.**
 
 <!-- end_slide -->
 
 # Our Journey Today (25 min)
 
-**By the end, you'll understand how vector search works under the hood —
-and what breaks when you take it to production.**
+**By the end — how vector search works under the hood,
+and what breaks at production scale.**
 
 <!-- column_layout: [1, 1] -->
 
@@ -183,7 +183,7 @@ python scripts/compare.py
 
 <!-- column: 0 -->
 
-**You already know this — distance between two points:**
+**Distance between two points — already familiar:**
 
 ```
 Point A = (x₁, y₁)    Point B = (x₂, y₂)
@@ -415,36 +415,50 @@ Let's look at each one...
 
 # IVFFlat: How Clustering Works
 
-**Step 1: At index build time, group similar vectors into clusters**
-
-*(Uses k-means — an algorithm that repeatedly finds the center of each group until groups stabilize)*
+**Step 1: Group similar vectors into clusters (k-means)**
 
 ```
-Vector Space:
-    1.0 │
-        │  ●Doc1                   ●Doc5
-    0.8 │   ⭐ Cluster A
-        │                           ●Doc4
-    0.6 │   ●Doc2               ⭐ Cluster B
-        │    ●Doc3           ●Doc6
-    0.4 │
-    0.0 └─────────────────────────────
-
-Cluster A: [Doc1, Doc2, Doc3]  → animals & pets
-Cluster B: [Doc4, Doc5, Doc6]  → machine learning
+        Y
+    1.0 │  ●(0.2,0.9)              ●(0.8,0.95)
+        │   "cats are cute"          "neural networks"
+    0.8 │  ●(0.15,0.8)              ●(0.85,0.85)
+        │   "dog breeds"              "deep learning"
+    0.6 │    ⭐(0.18,0.7)            ⭐(0.82,0.75)
+        │    Centroid A               Centroid B
+    0.4 │  ●(0.25,0.5)              ●(0.75,0.6)
+        │   "pet food"                "GPU training"
+    0.2 │
+        └──────────────────────────────────── X
+        0.0                                 1.0
 ```
 
 <!-- pause -->
 
-**Step 2: Query arrives → find nearest cluster → search only that cluster**
+**Step 2: Query → find nearest centroid → search only that cluster**
 
 ```
-Query: "deep learning models" → closest to Cluster B
-  → Only compare against Doc4, Doc5, Doc6
-  → Skip Doc1, Doc2, Doc3 entirely!
+Query: "deep learning models" → vector (0.80, 0.78)
+  → Nearest centroid: B at (0.82, 0.75)  ✓
+  → Search only Cluster B: 3 docs instead of 6!
 ```
 
-Checked: **3/6 docs (50%)** instead of all 6. At 1M docs with 1000 clusters → check ~1000 instead of 1M.
+<!-- end_slide -->
+
+# IVFFlat: Why It's Fast
+
+```
+6 docs, 2 clusters → searched 3/6 (50%)
+
+At real scale:
+  1M docs, 1000 clusters → search ~1000 instead of 1M
+  = 1000x fewer comparisons ⚡
+```
+
+<!-- pause -->
+
+**Tuning knob:** `nprobe` = how many clusters to check
+- `nprobe=1` → fastest, might miss edge cases
+- `nprobe=10` → slower, better recall
 
 <!-- end_slide -->
 
@@ -467,40 +481,37 @@ Top layers = express highways. Bottom layer = local streets.
 
 <!-- column: 0 -->
 
-**The structure — a city with three road levels:**
+**The structure — zoom levels:**
 
 ```
-Layer 2 (Express Highway):
-  Doc1 ═══════════ Doc4
-  (few landmarks, long-range links)
+Layer 2 (Express):  A ════════════ D
+                    (2 nodes, long jumps)
 
-Layer 1 (Main Roads):
-  Doc1 ── Doc3 ── Doc4 ── Doc6
-  (more nodes, medium links)
+Layer 1 (Main):     A ─── C ─── D ─── F
+                    (4 nodes, medium links)
 
-Layer 0 (Every Street):
-  Doc1 ── Doc2 ── Doc3
-  Doc4 ── Doc5 ── Doc6
-  (all nodes, dense links)
+Layer 0 (All):      A ─ B ─ C ─ D ─ E ─ F
+                    (all 6 nodes, dense)
 ```
 
 <!-- column: 1 -->
 
-**The search — zoom in layer by layer:**
+**Search for "deep learning":**
 
 ```
-Query: "deep learning models"
+Layer 2: Start at A
+  A ════════════ D
+  dist(A)=0.9    dist(D)=0.3 ✓ jump!
 
-Layer 2: Enter at Doc1
-  → Doc4 is closer. Jump.  ✓
+Layer 1: At D
+  D ─── F
+  dist(D)=0.3    dist(F)=0.4
+  D still best. Stay.
 
-Layer 1: At Doc4
-  → Check neighbors: Doc6
-  → Doc4 still closest. Stay.
-
-Layer 0: At Doc4
-  → Check neighbors: Doc5, Doc6
-  → Doc5 = best match!  🎯
+Layer 0: At D
+  D ─ E ─ F
+  dist(D)=0.3  dist(E)=0.05 🎯
+  → E = best match!
 ```
 
 <!-- pause -->
@@ -544,7 +555,7 @@ then local roads to the exact address.*
 
 # ⚠️ Critical: Always Use LIMIT!
 
-**Without LIMIT, your database <span style="color: #f38ba8">can't use ANN indexes.</span>**
+**Without LIMIT, the database <span style="color: #f38ba8">can't use ANN indexes.</span>**
 
 ```sql
 -- ❌ BAD: No target K → can't use ANN index
@@ -630,7 +641,7 @@ a single machine to a distributed cluster.
 
 # <span style="color: #f9e2af">Quantization:</span> Compress Smartly
 
-**Core idea:** You don't need full precision for *searching*.
+**Core idea:** Full precision isn't needed for *searching*.
 Only for the final *ranking* of top candidates.
 
 <!-- column_layout: [1, 1] -->
@@ -803,9 +814,9 @@ Combine with <span style="color: #4EC9B0">Reciprocal Rank Fusion (RRF)</span>:
 
 <!-- column: 0 -->
 
-| Your Situation | What to Do |
+| Situation | What to Do |
 |---------------|-----------|
-| < 1M docs | HNSW on your existing DB |
+| < 1M docs | HNSW on existing DB |
 | 1-10M, need filters | Partial indexes / partitioning |
 | Cost wall at 10-50M | Quantization (2x-32x) |
 | 50M-1B | Disk-based (DiskANN) |
@@ -815,12 +826,23 @@ Combine with <span style="color: #4EC9B0">Reciprocal Rank Fusion (RRF)</span>:
 
 <!-- pause -->
 
-**Golden rule:** <span style="color: #a6e3a1">Start with your existing DB.</span>
-Migrate only if you outgrow it.
+**Golden rule:** <span style="color: #a6e3a1">Start with the existing DB.</span>
+Migrate only when it's outgrown.
 
 <!-- column: 1 -->
 
-![](images/architecture-decision.png)
+```
+Recall
+100% │       ●──── Brute force
+     │     ●
+ 98% │   ●        HNSW ef=200
+ 95% │ ●          HNSW ef=40
+ 90% │●           IVFFlat
+     └──────────────────
+     1ms  10ms  50ms  500ms
+```
+
+*Pick the trade-off the product needs.*
 
 <!-- end_slide -->
 
@@ -834,12 +856,12 @@ Migrate only if you outgrow it.
 <!-- pause -->
 
 **2. Approximate search is the unlock.**
-   You don't need exact results. 95-99% accuracy at 100x speed is the right trade-off.
+   Exact results aren't needed. 95-99% accuracy at 100x speed is the right trade-off.
 
 <!-- pause -->
 
 **3. Do the RAM math early.**
-   100M × 1536d = 920 GB. Quantization and disk indexes are your escape hatches.
+   100M × 1536d = 920 GB. Quantization and disk indexes are the escape hatches.
 
 <!-- pause -->
 
@@ -1043,7 +1065,7 @@ Recall
 <!-- pause -->
 
 **Start with FP16** (free 2x win, zero recall loss).
-**Graduate to BQ + re-rank** when you need 32x compression.
+**Graduate to BQ + re-rank** when 32x compression is needed.
 
 <!-- end_slide -->
 
