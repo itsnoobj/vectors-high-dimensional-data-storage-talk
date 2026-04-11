@@ -1,9 +1,11 @@
 ---
-title: "Vector Search Fundamentals"
-sub_title: "From Text Comparison to Production Search — The Magic Unboxed"
-author: "Narrated by: Jeevan"
-date: "April 2026"
+options:
+  implicit_slide_ends: true
 ---
+
+![](images/title-slide-fundamentals.png)
+
+<!-- end_slide -->
 
 # Why This Talk, Why Now
 
