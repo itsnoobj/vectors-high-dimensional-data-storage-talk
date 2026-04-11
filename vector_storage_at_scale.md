@@ -255,6 +255,7 @@ made without doing the math first.</span>
 
 # Two Ways Through the Wall
 
+<!-- pause -->
 ![](images/two-ways.png)
 
 <!-- end_slide -->
@@ -314,6 +315,7 @@ Query → BQ index (RAM, fast)
 
 # Quantization: Trading Precision for Scale
 
+<!-- pause -->
 ![](images/quantization-blocks.png)
 
 <!-- end_slide -->
@@ -346,6 +348,7 @@ python scripts/quantization_demo.py
 
 **Quantization shrinks the vectors. But at hundreds of millions of vectors, the graph structure itself still needs significant RAM.**
 
+<!-- pause -->
 ![](images/six-degrees-diskann.png)
 
 <!-- end_slide -->
@@ -355,7 +358,7 @@ python scripts/quantization_demo.py
 <!-- column_layout: [1, 1] -->
 
 <!-- column: 0 -->
-
+<!-- pause -->
 ![](images/diskann-query-flow.png)
 
 <!-- column: 1 -->
@@ -408,6 +411,7 @@ it's blind to the metadata.**
 
 # Pre-Filter vs Post-Filter: Both Fail
 
+<!-- pause -->
 ![](images/filtered-search-problem.png)
 
 <!-- end_slide -->
@@ -490,8 +494,9 @@ LIMIT 10;
 
 <!-- pause -->
 
-<span style="color: #f38ba8">**This is an active research area.**</span> No database has fully solved it yet.
+<span style="color: #f38ba8">**This is an active research area.**</span> 
 
+<!-- pause -->
 <!-- end_slide -->
 
 # Now that pgvector handles quantization, DiskANN, and filtered search — is a separate vector DB still needed?
@@ -502,6 +507,7 @@ LIMIT 10;
 
 # The Data Sync Tax
 
+<!-- pause -->
 ![](images/data-sync-tax.png)
 
 <!-- end_slide -->
