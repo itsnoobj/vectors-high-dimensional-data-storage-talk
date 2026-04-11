@@ -794,10 +794,6 @@ Combine with <span style="color: #4EC9B0">Reciprocal Rank Fusion (RRF)</span>:
 **Golden rule:** <span style="color: #a6e3a1">Start with the existing DB.</span>
 Migrate only when it's outgrown.
 
-<!-- column: 1 -->
-
-![](images/architecture-decision.png)
-
 ```
 Recall (of true top 10, how many found?)
 100% │       ●──── Brute force
@@ -810,6 +806,10 @@ Recall (of true top 10, how many found?)
 ```
 
 *Pick the trade-off the product needs.*
+
+<!-- column: 1 -->
+
+![](images/architecture-decision.png)
 
 <!-- end_slide -->
 
