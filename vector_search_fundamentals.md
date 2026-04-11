@@ -198,9 +198,8 @@ Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 4. Return closest matches:
    "Amazing pizza place downtown"     → distance: 0.08  ✅
    "Great pasta and wine bar"         → distance: 0.12  ✅
+   "How to fix a flat tire"           → distance: 0.95  ❌
 ```
-
-~~"How to fix a flat tire"           → distance: 0.95~~ ❌
 
 <!-- pause -->
 
