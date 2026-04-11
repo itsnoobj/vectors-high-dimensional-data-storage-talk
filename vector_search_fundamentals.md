@@ -277,24 +277,23 @@ python scripts/semantic_search_demo.py
 
 # Chapter 2: The Scale Problem
 
-**So we've solved search, right? Just compare vectors and return the closest ones?**
+**Solved search, right? Just compare and return the closest?**
 
-**...Not quite.** There's a catch.
-
-<!-- pause -->
-
-**To find the closest vectors, we compared against *every* stored vector.**
-
-```
-10 documents     → 10 comparisons     → instant
-1,000 documents  → 1,000 comparisons  → fast
-1,000,000 docs   → 1,000,000 comparisons → 😰
-100,000,000 docs → 100,000,000 comparisons → 💀
-```
+**...Not quite.**
 
 <!-- pause -->
 
-*It's like finding a specific book in a library with no catalog — you'd have to check every shelf.*
+**Every query compares against *every* stored vector:**
+
+```
+  10 docs      █                              instant
+  1K docs      ██                             fast
+  100K docs    ████████                       ~okay
+  1M docs      ████████████████████           😰 seconds
+  100M docs    ████████████████████████████████████████  💀
+```
+
+<span style="color: #a6e3a1">10 docs</span> → <span style="color: #f9e2af">1M docs</span> → <span style="color: #f38ba8">100M docs</span> = **10,000,000x more work. Same query.**
 
 ![](images/gifs/flipping-papers.gif)
 
