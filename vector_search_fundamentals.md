@@ -148,6 +148,8 @@ python scripts/compare.py
 
 **Distance between two points — already familiar:**
 
+<!-- pause -->
+
 ```
 Point A = (x₁, y₁)    Point B = (x₂, y₂)
 
