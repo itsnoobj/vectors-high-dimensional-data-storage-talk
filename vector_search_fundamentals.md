@@ -46,7 +46,7 @@ Month 10: "Maybe we need a vector DB?"
 
 <!-- end_slide -->
 
-# Our Journey Today (25 min)
+# Our Journey Today
 
 **By the end — how vector search works under the hood,
 and what breaks at production scale.**
@@ -55,32 +55,22 @@ and what breaks at production scale.**
 
 <!-- column: 0 -->
 
-## 1. The Comparison Problem (~5 min)
-- How do computers compare text?
-- The magic: text → numbers
-- Distance = similarity
+## 1. The Comparison Problem
+*How computers understand meaning*
 
-## 2. Searching at Scale (~5 min)
-- The brute force problem
-- Why traditional indexes can't help
-- Approximate Nearest Neighbors
+## 2. Searching at Scale
+*Why brute force breaks and what replaces it*
 
-## 3. Two Index Strategies (~7 min)
-- IVFFlat: cluster & search
-- HNSW: multi-layer graph
-- When to use which
+## 3. Two Index Strategies
+*IVFFlat vs HNSW — when to use which*
 
 <!-- column: 1 -->
 
-## 4. The Scale Wall (~4 min)
-- The RAM math that breaks budgets
-- Quantization: compress smartly
-- Disk-based indexes
+## 4. The Scale Wall
+*RAM math, quantization, disk-based indexes*
 
-## 5. Production Reality (~4 min)
-- Filtered search: the hidden trap
-- Hybrid search: keywords + vectors
-- Decision matrix & takeaways
+## 5. Production Reality
+*Filtered search, hybrid search, decision matrix*
 
 <!-- end_slide -->
 
@@ -105,37 +95,13 @@ A computer sees two completely different strings of characters.
 
 <!-- end_slide -->
 
-# Numbers Are Easy to Compare
-
-**Computers are great at comparing numbers:**
-
-```
-Temperature today:  32°C
-Temperature yesterday: 30°C
-→ Difference = 2°C  ✓  Easy!
-```
-
-<!-- pause -->
-
-**But text?**
-
-```
-"I love pizza"
-"Pizza is great"
-→ Difference = ???  🤷
-```
-
-<!-- pause -->
-
-**The breakthrough idea:** What if we could turn text into numbers?
-
-Not random numbers — numbers that *capture meaning*.
-
-<!-- end_slide -->
-
 # <span style="color: #f9e2af">Embeddings:</span> Text → Numbers That Capture Meaning
 
-**An embedding model converts text into a list of numbers (a "vector"):**
+**The problem:** Computers compare numbers easily (`32°C vs 30°C = 2°C`) but can't compare text.
+
+**The breakthrough:** Turn text into numbers that *capture meaning*.
+
+<!-- pause -->
 
 ```
 "I love pizza"     → [0.2, 0.8, 0.1, ... 384 numbers]
@@ -727,7 +693,7 @@ python scripts/quantization_demo.py
 
 <!-- column: 0 -->
 
-<span style="color: #4EC9B0">**DiskANN**</span> (used in Serach Engines for that AI answer section):
+<span style="color: #4EC9B0">**DiskANN**</span> (used in Search Engines for that AI answer section):
 
 ```
 RAM:  Compressed graph + tiny codes
@@ -831,7 +797,7 @@ Migrate only when it's outgrown.
 <!-- column: 1 -->
 
 ```
-Recall
+Recall (of true top 10, how many found?)
 100% │       ●──── Brute force
      │     ●
  98% │   ●        HNSW ef=200
@@ -890,7 +856,7 @@ Recall
 🌐 **I write at** <span style="color: #89b4fa">noobj.me</span>
 
 📎 **Part 2:** `vector_storage_at_scale.md` in the same repo
-*(RAM wall, quantization, DiskANN, filtered search — recording coming soon)*
+*(Goes deeper: production tuning, architecture decisions, hybrid search patterns — recording coming soon)*
 
 <!-- column: 1 -->
 
@@ -1006,11 +972,11 @@ labeled "Italian"
 
 **IVFFlat (Cluster Search):**
 ```
-Fly to the Italian district
-🚁 → [Downtown] → 🏠 → 🏠 → 🍽️
+Go to the right aisle
+🛒 → [Dairy] → 🧈 → 🥛 → 🧀
 
-Search every restaurant in the area
-(even non-Italian ones nearby)
+Search everything in that section
+(even yogurt when looking for butter)
 ```
 
 **HNSW (Graph Navigation):**
