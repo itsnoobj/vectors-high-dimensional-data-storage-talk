@@ -709,7 +709,7 @@ SSD:  Full-precision vectors
 ```
 7B people, ~6 hops to reach anyone
 
-You → 🔵 → 🔵 → 🔵 → 🔵 → 🔵 → ✅
+🧑 → 🔵 → 🔵 → 🔵 → 🔵 → 🔵 → ✅
 
 Doubling data = ~1 extra hop, not 2x work
 ```
@@ -831,7 +831,7 @@ Recall (of true top 10, how many found?)
 <!-- pause -->
 
 **4. Filtered search is the hidden production trap.**
-   Test your real query patterns with filters. Don't assume the index handles it.
+   Test real query patterns with filters. Don't assume the index handles it.
 
 <!-- pause -->
 
