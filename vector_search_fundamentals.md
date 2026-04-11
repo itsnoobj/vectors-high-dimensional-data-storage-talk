@@ -15,6 +15,10 @@ options:
 
 Every team is adding vector search. Few are planning for what happens next.
 
+- LLM layer is commoditising — the moat isn't the model, **it's data**
+- RAG over internal knowledge — Confluence, SharePoint, emails, codebases
+- Better tooling, better dev experience, better customer answers
+
 <!-- pause -->
 
 **The pattern we keep seeing:**
