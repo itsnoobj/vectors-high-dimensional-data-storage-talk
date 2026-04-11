@@ -20,10 +20,12 @@ docs = [
     "Write-ahead logging ensures crash recovery",
     "Indexes speed up reads but slow down writes",
     "Partitioning large tables improves query performance",
-    "The query planner chooses the best execution strategy",
     "Foreign keys enforce referential integrity between tables",
     "MVCC allows concurrent reads without blocking writes",
-    "pg_stat_statements tracks slow queries for optimization",
+    "Use EXPLAIN ANALYZE to identify slow query bottlenecks",
+    "Monitor query performance with pg_stat_statements",
+    "The query planner chooses the best execution strategy",
+    "Tune work_mem and shared_buffers to speed up slow queries",
 ]
 
 model = SentenceTransformer('all-MiniLM-L6-v2')

@@ -225,9 +225,20 @@ SELECT id, content FROM docs_demo;
 
 <!-- pause -->
 
-**Step 2:** Search by meaning:
+**Step 2:** Embed a query → get the vector:
 ```bash
-python scripts/search_demo.py "how to find and fix slow queries"
+python scripts/embed_query.py "how to find and fix slow queries"
+```
+
+<!-- pause -->
+
+**Step 3:** Paste vector into SQL → semantic search:
+```sql
+SELECT content,
+       embedding <=> '<paste_vector_here>'::vector AS distance
+FROM docs_demo
+ORDER BY distance
+LIMIT 3;
 ```
 
 <!-- end_slide -->
@@ -262,18 +273,27 @@ python scripts/search_demo.py "how to find and fix slow queries"
 
 <!-- column: 0 -->
 
-**In a regular database:**
+**Regular database:**
 
 ```sql
-SELECT * FROM users
-WHERE email = 'alice@example.com';
+SELECT * FROM users WHERE id = 42;
 ```
 
 B-tree index → binary search. Fast.
 
+<!-- column: 1 -->
+
 ![](images/btree.png)
 
-<!-- pause -->
+<!-- reset_layout -->
+
+<!-- end_slide -->
+
+# Why Traditional Indexes Can't Help (cont.)
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
 
 **But for vectors:**
 
@@ -283,11 +303,7 @@ ORDER BY distance(embedding, query)
 LIMIT 10;
 ```
 
-No natural sort order for "closest to
-this 384-dimensional point."
 B-trees need linear ordering. <span style="color: #f38ba8">Vectors don't.</span>
-
-<!-- column: 1 -->
 
 ```
 [0.23, -0.89, 0.45, 0.12, -0.67, ...]
@@ -297,9 +313,7 @@ B-trees need linear ordering. <span style="color: #f38ba8">Vectors don't.</span>
 Sort these? By which number? 🤷
 ```
 
-![](images/gifs/exact-search-slow.png)
-
-<!-- reset_layout -->
+<!-- column: 1 -->
 
 <!-- pause -->
 
@@ -308,6 +322,12 @@ Sort these? By which number? 🤷
 <!-- pause -->
 
 **We need a different kind of index entirely.**
+
+<!-- pause -->
+
+![](images/gifs/exact-search-slow.png)
+
+<!-- reset_layout -->
 
 <!-- end_slide -->
 
@@ -374,17 +394,20 @@ Let's look at each one...
 
 ```
         Y
-    1.0 │  ●(0.2,0.9)              ●(0.8,0.95)
-        │   "cats are cute"          "neural networks"
-    0.8 │  ●(0.15,0.8)              ●(0.85,0.85)
-        │   "dog breeds"              "deep learning"
+    1.0 │  ● "cats are cute"        ● "neural networks"
+        │
+    0.8 │  ● "dog breeds"           ● "deep learning"
+        │
     0.6 │    ⭐(0.18,0.7)            ⭐(0.82,0.75)
         │    Centroid A               Centroid B
-    0.4 │  ●(0.25,0.5)              ●(0.75,0.6)
-        │   "pet food"                "GPU training"
+    0.4 │  ● "pet food"             ● "GPU training"
+        │
     0.2 │
         └──────────────────────────────────── X
         0.0                                 1.0
+
+A: cats(0.2,0.9) dogs(0.15,0.8) pet food(0.25,0.5)
+B: neural(0.8,0.95) deep learning(0.85,0.85) GPU(0.75,0.6)
 ```
 
 <!-- pause -->
@@ -399,24 +422,6 @@ Query: "deep learning models" → vector (0.80, 0.78)
 
 <!-- end_slide -->
 
-# IVFFlat: Why It's Fast
-
-```
-6 docs, 2 clusters → searched 3/6 (50%)
-
-At real scale:
-  1M docs, 1000 clusters → search ~1000 instead of 1M
-  = 1000x fewer comparisons ⚡
-```
-
-<!-- pause -->
-
-**Tuning knob:** `nprobe` = how many clusters to check
-- `nprobe=1` → fastest, might miss edge cases
-- `nprobe=10` → slower, better recall
-
-<!-- end_slide -->
-
 # Strategy 2: HNSW — Multi-Layer Graph
 
 <span style="color: #4EC9B0">**HNSW**</span> = Hierarchical Navigable Small World
@@ -427,56 +432,6 @@ Top = express highways. Bottom = local streets.
 *"GPS navigation — highways first, then local roads to the destination."* 🗺️
 
 ![](images/hnsw.png)
-
-<!-- end_slide -->
-
-# HNSW: How the Graph Works
-
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
-**The structure — zoom levels:**
-
-```
-Layer 2 (Express):  A ════════════ D
-                    (2 nodes, long jumps)
-
-Layer 1 (Main):     A ─── C ─── D ─── F
-                    (4 nodes, medium links)
-
-Layer 0 (All):      A ─ B ─ C ─ D ─ E ─ F
-                    (all 6 nodes, dense)
-```
-
-<!-- column: 1 -->
-
-**Search for "deep learning":**
-
-```
-Layer 2: Start at A
-  A ════════════ D
-  dist(A)=0.9    dist(D)=0.3 ✓ jump!
-
-Layer 1: At D
-  D ─── F
-  dist(D)=0.3    dist(F)=0.4
-  D still best. Stay.
-
-Layer 0: At D
-  D ─ E ─ F
-  dist(D)=0.3  dist(E)=0.05 🎯
-  → E = best match!
-```
-
-<!-- pause -->
-
-*Like GPS: highway to the right area,
-then local roads to the exact address.*
-
-<!-- reset_layout -->
-
-![](images/gifs/hnsw-network.gif)
 
 <!-- end_slide -->
 
@@ -661,14 +616,6 @@ The sharp original picks the winner.
 
 &nbsp;
 
-**See the transformation:**
-```bash
-python scripts/quantization_intro.py
-```
-
-<!-- pause -->
-
-**See it at scale (10K vectors):**
 ```bash
 python scripts/quantization_demo.py
 ```
@@ -719,24 +666,6 @@ Doubling data = ~1 extra hop, not 2x work
 <!-- pause -->
 
 **The trade-off:** Slightly higher latency, <span style="color: #a6e3a1">massively lower cost.</span>
-
-<!-- end_slide -->
-
-# Chapter 5: Production Reality
-
-<!-- pause -->
-
-**Surprise 1:** Real queries have filters → vector index is blind to `WHERE tenant_id = 42`
-
-<!-- pause -->
-
-**Surprise 2:** Keywords still matter → combine vector + keyword search (hybrid)
-
-<!-- pause -->
-
-**Surprise 3:** <span style="color: #f38ba8">Filtered search fails silently</span> — post-filter returns too few, pre-filter falls back to brute force
-
-*More on filtered search in the bonus section if we have time.*
 
 <!-- end_slide -->
 
@@ -822,13 +751,18 @@ Recall (of true top 10, how many found?)
 
 <!-- pause -->
 
-**4. Filtered search is the hidden production trap.**
-   Test real query patterns with filters. Don't assume the index handles it.
+**4. Start with the existing DB.**
+   Migrate to a specialized vector DB only when it's outgrown.
 
 <!-- pause -->
 
 **5. Measure recall, not just latency.**
    <span style="color: #f38ba8">A fast wrong answer is worse than a slightly slower right answer.</span>
+
+<!-- pause -->
+
+**6. Filtered search is the hidden production trap.**
+   Test real query patterns with filters. Don't assume the index handles it.
 
 <!-- end_slide -->
 
@@ -931,6 +865,53 @@ Falls back to brute force.
 <!-- pause -->
 
 **Solutions:** iterative scanning, partial indexes, partitioning — but <span style="color: #f38ba8">this is the #1 gotcha in production.</span>
+
+<!-- end_slide -->
+
+# Appendix: HNSW — How the Graph Works
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+**The structure — zoom levels:**
+
+```
+Layer 2 (Express):  A ════════════ D
+                    (2 nodes, long jumps)
+
+Layer 1 (Main):     A ─── C ─── D ─── F
+                    (4 nodes, medium links)
+
+Layer 0 (All):      A ─ B ─ C ─ D ─ E ─ F
+                    (all 6 nodes, dense)
+```
+
+<!-- column: 1 -->
+
+**Search for "deep learning":**
+
+```
+Layer 2: Start at A
+  A ════════════ D
+  dist(A)=0.9    dist(D)=0.3 ✓ jump!
+
+Layer 1: At D
+  D ─── F
+  dist(D)=0.3    dist(F)=0.4
+  D still best. Stay.
+
+Layer 0: At D
+  D ─ E ─ F
+  dist(D)=0.3  dist(E)=0.05 🎯
+  → E = best match!
+```
+
+<!-- reset_layout -->
+
+*Like GPS: highway to the right area, then local roads to the exact address.*
+
+![](images/gifs/hnsw-network.gif)
 
 <!-- end_slide -->
 
