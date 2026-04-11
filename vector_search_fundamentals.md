@@ -175,8 +175,6 @@ Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 
 # Three Ways to Measure Distance
 
-![](images/gifs/compare-vectors.gif)
-
 <!-- column_layout: [1, 4, 1] -->
 
 <!-- column: 0 -->
