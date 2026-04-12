@@ -677,6 +677,8 @@ Doubling data = ~1 extra hop, not 2x work
 
 <!-- column: 1 -->
 
+<!-- pause -->
+
 ![](images/diskann-query-flow.png)
 
 <!-- reset_layout -->
@@ -745,6 +747,8 @@ Recall (of true top 10, how many found?)
 *Pick the trade-off the product needs.*
 
 <!-- column: 1 -->
+
+<!-- pause -->
 
 ![](images/architecture-decision.png)
 
