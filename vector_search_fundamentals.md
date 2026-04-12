@@ -1,6 +1,12 @@
 ---
 options:
   implicit_slide_ends: true
+theme:
+  override:
+    footer:
+      style: template
+      left: "Jeevan | 12 Apr 2026"
+      right: "{current_slide} / {total_slides}"
 ---
 
 ![](images/title-slide-fundamentals.png)
@@ -504,7 +510,7 @@ once they have K candidates. No K = no early stopping = no index.
 
 <!-- pause -->
 
-**Rule of 37:** *To find the best out of N, explore 37% then pick the next one that beats all seen so far.*
+**Rule of 37** *(from "Algorithms to Live By"):* Know the number 37?
 
 ![](images/gifs/fries.gif)
 
