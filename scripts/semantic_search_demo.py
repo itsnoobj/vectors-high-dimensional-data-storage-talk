@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Demo: embed 10 sentences, search by meaning, show truncated vectors."""
+import warnings; warnings.filterwarnings("ignore")
+import os; os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np

@@ -6,6 +6,8 @@ Uses 1024 dimensions from BGE-large model to demonstrate TOAST behavior.
 """
 
 import psycopg2
+import warnings; warnings.filterwarnings("ignore")
+import os; os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from sentence_transformers import SentenceTransformer
 import random
 import os

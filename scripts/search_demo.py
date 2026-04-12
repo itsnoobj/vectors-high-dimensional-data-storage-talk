@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Semantic search via SQL — embed a query, find closest docs."""
 import os, sys, psycopg2
+import warnings; warnings.filterwarnings("ignore")
+import os; os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 

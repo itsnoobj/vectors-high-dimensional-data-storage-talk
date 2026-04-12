@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Quick demo: show how embeddings capture meaning, not keywords."""
+import warnings; warnings.filterwarnings("ignore")
+import os; os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 

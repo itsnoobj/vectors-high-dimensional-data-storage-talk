@@ -1,5 +1,7 @@
 import os
 import psycopg2
+import warnings; warnings.filterwarnings("ignore")
+import os; os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 

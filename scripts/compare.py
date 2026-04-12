@@ -1,8 +1,18 @@
+import sys, os, warnings, logging
+warnings.filterwarnings("ignore")
+logging.disable(logging.CRITICAL)
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+os.environ["MLX_VERBOSE"] = "0"
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+# Suppress stderr during model load
+import io, contextlib
 print("Loading model...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+with contextlib.redirect_stderr(io.StringIO()):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
 
 while True:
     text1 = input("\nText 1 (or 'q' to quit): ")

@@ -85,13 +85,13 @@ and what breaks at production scale.**
 **The fundamental problem: computers don't understand words.**
 
 ```
-"I love pizza"   vs   "Pizza is great"
+"I love fries"   vs   "Fries are great"
 ```
 
 <!-- pause -->
 
 🧑 (Human) instantly similar.
-💻 (Computer) two completely different strings.
+💻 (Computer) two different strings.
 
 <!-- pause -->
 
@@ -104,13 +104,14 @@ and what breaks at production scale.**
 # <span style="color: #f9e2af">Embeddings:</span> Text → Numbers That Capture Meaning
 
 **The problem:** Computers compare numbers easily (`32°C vs 30°C = 2°C`) but can't compare text.
-**The breakthrough:** Turn text into numbers that *capture meaning*.
+
+**The trick:** Turn text into numbers that *capture meaning*.
 
 <!-- pause -->
 
 ```
-"I love pizza"     → [0.2, 0.8, 0.1, ... 384 numbers]
-"Pizza is great"   → [0.3, 0.7, 0.2, ... 384 numbers]
+"I love fries"     → [0.2, 0.8, 0.1, ... 384 numbers]
+"Fries are great"  → [0.3, 0.7, 0.2, ... 384 numbers]
 "The sky is blue"  → [0.9, 0.1, 0.8, ... 384 numbers]
 ```
 
@@ -125,7 +126,7 @@ and what breaks at production scale.**
 Just like GPS turns "India Gate" into `(28.61, 77.22)` and
 "Rashtrapati Bhavan" into `(28.61, 77.19)` — close on a map because they're close in Delhi —
 
-an embedding model places "pizza" and "great food" close together
+an embedding model places "fries" and "great snack" close together
 in a 384-dimensional "meaning space."
 
 <!-- end_slide -->
@@ -136,6 +137,18 @@ in a 384-dimensional "meaning space."
 
 ```bash
 python scripts/compare.py
+```
+
+<!-- pause -->
+
+**Try these:**
+```
+Text 1: I love fries
+Text 2: Fries are great
+```
+```
+Text 1: I love fries
+Text 2: The stock market crashed
 ```
 
 <!-- end_slide -->
@@ -189,16 +202,16 @@ Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)
 **The complete flow:**
 
 ```
-1. User asks: "best Italian restaurants"
+1. User asks: "best crispy fries"
                     ↓
 2. Embedding model: [0.72, 0.82, 0.08, ...]
                     ↓
 3. Compare against every stored vector using cosine distance
                     ↓
 4. Return closest matches:
-   "Amazing pizza place downtown"     → distance: 0.08  ✅
-   "Great pasta and wine bar"         → distance: 0.12  ✅
-   "How to fix a flat tire"           → distance: 0.95  ❌
+   "Golden crunchy french fries"       → distance: 0.08  ✅
+   "Crispy potato wedges with dip"     → distance: 0.12  ✅
+   "How to fix a flat tire"            → distance: 0.95  ❌
 ```
 
 <!-- pause -->
@@ -352,7 +365,7 @@ ANN search:    ███░░░░░░░░░░░░░░░░  ~5% sc
 
 - **Exact search:** Check every house in every street → hours 🐌
 - **With pincode:** Go to the right area, check nearby streets → minutes ⚡
-- **The catch:** Might miss a house on the border of two pincodes
+- **The catch:** <span style="color: #f38ba8">Might miss a house on the border of two pincodes</span>
 
 <!-- end_slide -->
 
@@ -427,7 +440,7 @@ Query: "deep learning models" → vector (0.80, 0.78)
 <span style="color: #4EC9B0">**HNSW**</span> = Hierarchical Navigable Small World
 
 Build a navigable graph with layers.
-Top = express highways. Bottom = local streets.
+<span style="color: #f9e2af">Top = express highways. Bottom = local streets.</span>
 
 *"GPS navigation — highways first, then local roads to the destination."* 🗺️
 
@@ -489,6 +502,10 @@ once they have K candidates. No K = no early stopping = no index.
 
 *Forgetting LIMIT is like ordering everything on the menu just to pick one dish* 🍟
 
+<!-- pause -->
+
+**Rule of 37:** *To find the best out of N, explore 37% then pick the next one that beats all seen so far.*
+
 ![](images/gifs/fries.gif)
 
 <!-- end_slide -->
@@ -543,8 +560,8 @@ a single machine to a distributed cluster.
 
 **Levers to pull:**
 <!-- pause -->
-1. **Smaller embeddings:** 384 dims = 1.5 KB (4x smaller) — <span style="color: #f9e2af">but lower accuracy without fine-tuning</span>
-2. **Quantization:** Compress vectors without losing much accuracy
+1. **Quantization:** Compress vectors without losing much accuracy
+2. **Disk-based indexes:** Move the index to SSD, keep only compressed data in RAM
 
 ![](images/two-ways.png)
 

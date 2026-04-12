@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Seed 10 docs into pgvector for the semantic search demo."""
 import os, psycopg2
+import warnings; warnings.filterwarnings("ignore")
+import os; os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
