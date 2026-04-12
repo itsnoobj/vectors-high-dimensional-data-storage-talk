@@ -886,6 +886,33 @@ Falls back to brute force.
 
 <!-- end_slide -->
 
+# 💻 Demo: Filtered Search
+
+```sql
+-- Setup metadata on our docs
+UPDATE docs_demo SET metadata = jsonb_build_object(
+  'category', CASE (id % 3)
+    WHEN 0 THEN 'performance' WHEN 1 THEN 'storage' ELSE 'concurrency' END
+);
+```
+
+<!-- pause -->
+
+```sql
+-- Approach 1: iterative_scan (works for any filter)
+SET hnsw.iterative_scan = relaxed_order;
+
+EXPLAIN ANALYZE
+SELECT content,
+  embedding <=> (SELECT embedding FROM docs_demo WHERE id = 1) AS dist
+FROM docs_demo
+WHERE metadata->>'category' = 'performance'
+ORDER BY embedding <=> (SELECT embedding FROM docs_demo WHERE id = 1)
+LIMIT 3;
+```
+
+<!-- end_slide -->
+
 # Appendix: HNSW — How the Graph Works
 
 <!-- column_layout: [1, 1] -->

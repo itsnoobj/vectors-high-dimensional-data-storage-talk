@@ -14,7 +14,12 @@ with contextlib.redirect_stderr(io.StringIO()):
     model = SentenceTransformer('all-MiniLM-L6-v2')
 emb = model.encode(query)
 
+vec = f"[{','.join(f'{float(v):.8f}' for v in emb)}]"
+
 print(f"\n🔍 \"{query}\"\n")
 print(f"📐 Vector ({len(emb)} dims, first 5): [{', '.join(f'{v:.4f}' for v in emb[:5])}, ...]")
-print(f"\n📋 Copy-paste for SQL:\n")
-print(f"'[{','.join(f'{float(v):.8f}' for v in emb)}]'")
+
+with open("/tmp/query_vector.txt", "w") as f:
+    f.write(vec)
+print(f"\n📋 Saved to /tmp/query_vector.txt")
+print(f"\n{vec}")
