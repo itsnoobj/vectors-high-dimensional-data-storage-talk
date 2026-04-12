@@ -542,6 +542,7 @@ a single machine to a distributed cluster.
 # Two Ways Through the Wall
 
 **Levers to pull:**
+<!-- pause -->
 1. **Smaller embeddings:** 384 dims = 1.5 KB (4x smaller) — <span style="color: #f9e2af">but lower accuracy without fine-tuning</span>
 2. **Quantization:** Compress vectors without losing much accuracy
 
