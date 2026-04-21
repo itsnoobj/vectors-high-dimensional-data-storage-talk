@@ -1322,7 +1322,8 @@ ACID + SQL + existing infrastructure.
 
 **Questions?**
 
-📬 **Get in touch:** jeevandc24@iimb.ac.in  
+📬 **Get in touch:** jeevan.dc24@alumni.iimb.ac.in  
+🌐 **I write at** noobj.me  
 *(Not active on social media)*
 
 **Slides & Code:**
