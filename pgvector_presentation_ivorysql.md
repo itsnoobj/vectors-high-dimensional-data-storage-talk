@@ -477,20 +477,15 @@ Backup slides — if we have time
 
 # When to Use What — Decision Matrix
 
-| Situation | What to do |
-|-----------|-----------|
-| Just starting, < 1M docs | pgvector + HNSW. Done. |
-| Growing, 1-10M, need filters | pgvector + `iterative_scan` + partial indexes |
-| Hitting cost wall at 10-50M | `halfvec` (2x) or BQ + re-rank (32x) |
-| Serious scale, 50M-1B | DiskANN via pgvectorscale |
-| Multi-tenant SaaS | Partition by tenant, index per partition |
-| Keyword + semantic | Add BM25 (ParadeDB or app-level RRF) |
-| Sub-5ms at 100M+ | Evaluate Qdrant or Pinecone |
-| Already on Mongo or Elastic | Use their native vector support |
-
-<!-- pause -->
+![](images/architecture-decision.png)
 
 <span style="color: #f9e2af">**Start with the existing database.**</span> Migrate only when it's outgrown.
+
+<!-- end_slide -->
+
+# The Data Sync Tax
+
+![](images/data-sync-tax.png)
 
 <!-- end_slide -->
 
@@ -516,6 +511,8 @@ Per vector:  1536 dims × 4 bytes = 6 KB
 # Quantization: Compress Smartly
 
 **Full precision isn't needed for *searching*. Only for final *ranking*.**
+
+![](images/quantization-blocks.png)
 
 <!-- column_layout: [1, 1] -->
 
