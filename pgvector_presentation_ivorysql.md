@@ -1,9 +1,6 @@
----
-title: "Inside pgvector"
-sub_title: "How PostgreSQL Stores, Indexes & Manages High-Dimensional Data"
-author: "Narrated by: Jeevan"
-date: "April 26, 2026"
----
+![](images/title-slide-ivorysql.png)
+
+<!-- end_slide -->
 
 # Why This Talk
 
@@ -58,6 +55,36 @@ Month 10: "Maybe we need a vector DB?"
 <!-- pause -->
 
 ![](images/gifs/mind-blown.gif)
+
+<!-- end_slide -->
+
+# 💻 Quick Demo: Semantic Search
+
+**Pre-seeded:** 12 PostgreSQL docs in `docs_demo` (384d embeddings)
+
+```sql
+SELECT id, content FROM docs_demo;
+```
+
+<!-- pause -->
+
+**Now search by meaning, not keywords:**
+
+```bash
+python scripts/embed_query.py "how to find and fix slow queries"
+```
+
+```sql
+SELECT content,
+       embedding <=> '<paste_vector>'::vector AS distance
+FROM docs_demo
+ORDER BY distance
+LIMIT 3;
+```
+
+<!-- pause -->
+
+*Zero keyword overlap — pure semantic match* ✨
 
 <!-- end_slide -->
 
@@ -356,41 +383,6 @@ UPDATE documents SET metadata = '{"views": 100}' WHERE id = 1;
 
 <!-- end_slide -->
 
-# The Filtered Search Trap
-
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
-**In production, you rarely search the entire table:**
-
-```sql
-SELECT * FROM docs
-WHERE tenant_id = 42
-  AND category = 'electronics'
-ORDER BY embedding <=> query_embedding
-LIMIT 10;
-```
-
-<!-- pause -->
-
-**Problem:** Vector indexes are blind to metadata filters.
-
-**Fixes:**
-- **`iterative_scan`** — keep scanning until enough filtered results
-- **Partial indexes** — separate HNSW per category
-- **Table partitioning** — one partition per tenant
-
-*#1 gotcha in production vector search.*
-
-<!-- column: 1 -->
-
-![](images/filtered-search-problem.png)
-
-<!-- reset_layout -->
-
-<!-- end_slide -->
-
 # Key Takeaways
 
 pgvector handles 1k-10M vectors in production. No specialized DB needed.
@@ -428,6 +420,9 @@ pgvector handles 1k-10M vectors in production. No specialized DB needed.
 *Now go forth and vector!* 🚀
 
 **Questions?**
+
+📎 **Advanced topics** in the same repo: quantization, DiskANN, hybrid search, architecture trade-offs
+→ `vector_search_fundamentals.md` & `vector_storage_at_scale.md`
 
 📬 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span>
 
@@ -472,6 +467,41 @@ pgvector handles 1k-10M vectors in production. No specialized DB needed.
 # Appendix
 
 Backup slides — if we have time
+
+<!-- end_slide -->
+
+# The Filtered Search Trap
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+**In production, you rarely search the entire table:**
+
+```sql
+SELECT * FROM docs
+WHERE tenant_id = 42
+  AND category = 'electronics'
+ORDER BY embedding <=> query_embedding
+LIMIT 10;
+```
+
+<!-- pause -->
+
+**Problem:** Vector indexes are blind to metadata filters.
+
+**Fixes:**
+- **`iterative_scan`** — keep scanning until enough filtered results
+- **Partial indexes** — separate HNSW per category
+- **Table partitioning** — one partition per tenant
+
+*#1 gotcha in production vector search.*
+
+<!-- column: 1 -->
+
+![](images/filtered-search-problem.png)
+
+<!-- reset_layout -->
 
 <!-- end_slide -->
 
