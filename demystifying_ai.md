@@ -160,7 +160,7 @@ Two separate mechanisms at work:
 
 <!-- pause -->
 
-![](images/dimensions-growth.svg)
+![](images/dimensions-growth.png)
 
 <!-- pause -->
 
@@ -228,7 +228,7 @@ because one has a longer arm.*
 
 **Measure the angle between two arrows, not the distance:**
 
-![](images/cosine-similarity-angle.svg)
+![](images/cosine-similarity-angle.png)
 
 <!-- pause -->
 
@@ -416,7 +416,7 @@ Found "cart abandonment" without ever saying those words.
 
 # Why It Sometimes Gets It Wrong
 
-![](images/why-wrong-boxes.svg)
+![](images/why-wrong-boxes.png)
 
 <!-- pause -->
 
@@ -531,7 +531,7 @@ Shows each word colored by attention weight:
 
 <!-- pause -->
 
-![](images/matrix-multiplication-intuition.svg)
+![](images/matrix-multiplication-intuition.png)
 
 <!-- pause -->
 
@@ -617,7 +617,7 @@ Next word probabilities: Paris (94%), Lyon (3%), a (2%), the (1%)
 
 **From typing to response:**
 
-![](images/full-pipeline.svg)
+![](images/full-pipeline.png)
 
 <!-- pause -->
 
@@ -777,7 +777,7 @@ Question: "What's our refund policy for enterprise?"
 
 # Skills, Agents & System Prompts
 
-![](images/skills-agents-prompts.svg)
+![](images/skills-agents-prompts.png)
 
 <!-- pause -->
 
@@ -796,7 +796,7 @@ that's writing the job description. Better JD → better assistant.
 
 # Testing AI Features
 
-![](images/testing-ai-visual.svg)
+![](images/testing-ai-visual.png)
 
 <!-- pause -->
 
