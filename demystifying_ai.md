@@ -59,13 +59,13 @@ Most of us use them like a **black box:**
 1. Predicting, not thinking
 2. The meaning map & dimensions
 3. Distance & cosine similarity
-4. Text → numbers (with 5-year-old mental model)
-5. Context changes everything
+4. Tokenization
+5. Text → numbers & context
 6. Semantic search
-7. Why it gets things wrong
-8. One word at a time — generation
-9. Tokenization, attention & temperature
-10. Matrix math & why it's expensive
+7. Generation — one word at a time
+8. Attention & temperature
+9. Why it gets things wrong
+10. Matrix math & cost
 
 <!-- column: 1 -->
 
@@ -174,34 +174,28 @@ Two separate mechanisms at work:
 
 # Measuring "Nearby" — Distance
 
-**Same formula from school, just more numbers:**
+**How far apart are two pins on the meaning map?**
 
 ```
          Y
-     5 ──┤          ● B (5, 5)
+     5 ──┤          ● "fries are great"
          │        ╱
-     4 ──┤      ╱
+     4 ──┤      ╱  close! (similar meaning)
          │    ╱
-     3 ──┤  ● A (2, 3)
+     3 ──┤  ● "I love fries"
          │
-     1 ──┤
-         └──┬──┬──┬──┬──┬──── X
-            1  2  3  4  5
+     1 ──┤                          ● "stock market" (far away!)
+         └──┬──┬──┬──┬──┬──┬──┬──── X
+            1  2  3  4  5  6  7
 ```
 
 <!-- pause -->
 
-**Euclidean Distance Formula:**
-
-```
-    d(A,B) = √( Σᵢ (aᵢ - bᵢ)² )
-
-    2D:    √( (5-2)² + (5-3)² ) = √(9 + 4) = √13 ≈ 3.6
-
-    1536D: √( (a₁-b₁)² + (a₂-b₂)² + ... + (a₁₅₃₆-b₁₅₃₆)² )
-```
-
-Same idea — subtract, square, sum, root. Just repeated 1536 times.
+**The intuition:**
+- Close together on the map = similar meaning
+- Far apart = different meaning
+- Works the same whether it's 2 dimensions or 1536 — just measuring gap between points
+- The computer does the math; what matters is **closer = more similar**
 
 <!-- end_slide -->
 
@@ -335,8 +329,8 @@ The same word gets *different* numbers depending on surroundings:
 "The bank was steep"           → riverbank (geography)
 "The bank was closed"          → financial institution
 
-"I need to book a flight"      → reserve a ticket
-"I need to book a flight of stairs" → ???  (no such thing!)
+"She saw a bat"                → animal? sports equipment?
+"He plays Java all day"        → programming language? gamelan music?
 
 "Apple released a new product" → tech company
 "Apple released a sweet aroma" → fruit
@@ -344,6 +338,27 @@ The same word gets *different* numbers depending on surroundings:
 
 The attention layers (32-128 passes) keep refining each word's numbers
 based on context. **This is why AI handles ambiguity well.**
+
+<!-- end_slide -->
+
+# Tokenization — How AI Reads Text
+
+**LLMs don't read words. They read tokens — chunks of text.**
+
+<!-- pause -->
+
+| What it seems like | What actually happens |
+|---|---|
+| "Summarize this 10-page doc" | ~4,000 tokens of input |
+| "Context window: 128K tokens" | ≈ 96,000 words ≈ 300-page book |
+| "Why did it cut off mid-sentence?" | Hit the max output token limit |
+| "Why does it cost more for long prompts?" | Billed per token (input AND output) |
+
+<!-- pause -->
+
+**Rule of thumb:** 1 token ≈ ¾ of a word.
+
+This is why AI has a memory limit — measured in tokens, not words.
 
 <!-- end_slide -->
 
@@ -470,27 +485,6 @@ Shows:
 
 <!-- end_slide -->
 
-# Tokenization — How AI Reads Text
-
-**LLMs don't read words. They read tokens — chunks of text.**
-
-<!-- pause -->
-
-| What it seems like | What actually happens |
-|---|---|
-| "Summarize this 10-page doc" | ~4,000 tokens of input |
-| "Context window: 128K tokens" | ≈ 96,000 words ≈ 300-page book |
-| "Why did it cut off mid-sentence?" | Hit the max output token limit |
-| "Why does it cost more for long prompts?" | Billed per token (input AND output) |
-
-<!-- pause -->
-
-**Rule of thumb:** 1 token ≈ ¾ of a word.
-
-This is why AI has a memory limit — measured in tokens, not words.
-
-<!-- end_slide -->
-
 # Attention — How AI Decides What Matters
 
 **Not every word gets equal weight. Like reading a contract — eyes jump to key clauses.**
@@ -568,11 +562,18 @@ That's why GPUs exist — they do matrix math in parallel.
 
 <!-- pause -->
 
-![](images/dimensions-growth.svg)
+```
+    Step 1: Feed a sentence with a missing word
+    Step 2: Model predicts (wrong at first)
+    Step 3: Compare to the real answer
+    Step 4: Adjust matrix values slightly
+    Step 5: Repeat for TRILLIONS of examples
+         ↺ (months of GPU time)
+```
 
 <!-- pause -->
 
-| What | Scale |
+| What | Scale (estimated) |
 |------|-------|
 | Parameters to tune | ~1.8 trillion |
 | Training examples | Trillions of tokens |
