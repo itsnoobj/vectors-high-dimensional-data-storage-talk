@@ -43,7 +43,7 @@ Most of us use them like a **black box:**
 
 <!-- column: 1 -->
 
-![width:400px](images/gifs/mind-blown.gif)
+![image:w:40%](images/gifs/mind-blown.gif)
 
 <!-- end_slide -->
 
@@ -85,7 +85,7 @@ Most of us use them like a **black box:**
 
 # Part 1: Unboxing the Magic
 
-![width:900px](images/gifs/flipping-papers.gif)
+![image:w:50%](images/gifs/flipping-papers.gif)
 
 <!-- end_slide -->
 
@@ -149,7 +149,7 @@ Most of us use them like a **black box:**
 
 <!-- pause -->
 
-![](images/dimensions-growth.png)
+![image:w:50%](images/dimensions-growth.png)
 
 <!-- pause -->
 
@@ -203,7 +203,7 @@ But they mean the **same thing!**
 
 # Cosine Similarity — The Angle Between Meanings
 
-![](images/cosine-similarity-angle.png)
+![image:w:50%](images/cosine-similarity-angle.png)
 
 <!-- pause -->
 
@@ -372,7 +372,7 @@ Found "cart abandonment" without saying those words. **Meaning > keywords.**
 
 # Why It Sometimes Gets It Wrong
 
-![](images/why-wrong-boxes.png)
+![image:w:60%](images/why-wrong-boxes.png)
 
 <!-- pause -->
 
@@ -467,7 +467,7 @@ Shows each word colored by attention weight:
 
 # Under the Hood — Matrix Multiplication
 
-![](images/matrix-multiplication-intuition.png)
+![image:w:50%](images/matrix-multiplication-intuition.png)
 
 <!-- pause -->
 
@@ -525,7 +525,7 @@ One prompt = **trillions** of multiply-and-add ops. That's why GPUs exist.
 
 # Putting It All Together
 
-![](images/full-pipeline.png)
+![image:w:50%](images/full-pipeline.png)
 
 <!-- pause -->
 
@@ -676,7 +676,7 @@ Format: table [ID, Scenario,
 
 # Skills, Agents & System Prompts
 
-![](images/skills-agents-prompts.png)
+![image:w:50%](images/skills-agents-prompts.png)
 
 <!-- pause -->
 
@@ -694,7 +694,7 @@ Better job description → better assistant.
 
 # Testing AI Features
 
-![](images/testing-ai-visual.png)
+![image:w:50%](images/testing-ai-visual.png)
 
 <!-- pause -->
 
@@ -822,7 +822,7 @@ Structured specs and clear context make AI dramatically more useful.
 
 <!-- column: 1 -->
 
-![width:400px](images/gifs/thank-you-bow.gif)
+![image:w:40%](images/gifs/thank-you-bow.gif)
 
 <!-- end_slide -->
 
