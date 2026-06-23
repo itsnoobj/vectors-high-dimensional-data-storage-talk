@@ -95,38 +95,31 @@ Most of us use them like a **black box:**
 
 <!-- pause -->
 
-Two separate mechanisms at work:
-
-<!-- pause -->
-
 **🗺️ The Meaning Map (Embeddings)**
 
-- Words → coordinates on a "meaning map"
-- Similar meanings → same neighborhood
+- Words → coordinates on a map
+- Similar meanings → nearby coordinates
 
 ```
-"I love fries"        → 📍 (some location)
-"Fries are great"     → 📍 (very nearby — similar meaning!)
-"The stock market"    → 📍 (across town — different meaning)
+"I love fries"     → 📍 (location A)
+"Fries are great"  → 📍 (nearby!)
+"The stock market" → 📍 (across town)
 ```
 
 <!-- pause -->
 
 **🎲 The Word Predictor (Generation)**
 
-- Doesn't look up answers — *constructs* them one word at a time
-- Each word: "Given everything so far, what's most likely next?"
-- Not retrieving. Generating.
+- Constructs answers one word at a time
+- "What's the most likely next word?"
 
 <!-- pause -->
 
-**These two ideas power everything in this talk.**
+**These two ideas power everything.**
 
 <!-- end_slide -->
 
 # The Meaning Map
-
-**A city map organized by meaning, not streets.**
 
 ```
     ┌─────────────────────────────────────────────┐
@@ -144,19 +137,15 @@ Two separate mechanisms at work:
     └─────────────────────────────────────────────┘
 ```
 
-<!-- pause -->
-
-- **Same neighborhood** = similar meaning
-- **Different part of town** = different meaning
-- Ask a question → drop a pin → look at what's nearby
+- Same neighborhood = similar meaning
+- Different district = different meaning
 
 <!-- end_slide -->
 
 # How Many Coordinates?
 
-**GPS:** 2 numbers (latitude, longitude) → locate a place
-
-**Embeddings:** 384 to 3072 numbers → locate a *meaning*
+**GPS:** 2 numbers → locate a place
+**Embeddings:** 384–3072 numbers → locate a *meaning*
 
 <!-- pause -->
 
@@ -164,69 +153,55 @@ Two separate mechanisms at work:
 
 <!-- pause -->
 
-**Why so many?** Meaning is complex.
-
-- Describing a person with just height + weight (2 numbers) → imprecise
-- Full profile: age, interests, location, profession... → precise matching
-- More dimensions = more precise description = better semantic matching
+- More dimensions = more precise = better matching
+- Like describing a person: height+weight (2) vs full profile (hundreds)
 
 <!-- end_slide -->
 
 # Measuring "Nearby" — Distance
 
-**How far apart are two pins on the meaning map?**
-
 ```
          Y
      5 ──┤          ● "fries are great"
          │        ╱
-     4 ──┤      ╱  close! (similar meaning)
+     4 ──┤      ╱  close! (similar)
          │    ╱
      3 ──┤  ● "I love fries"
          │
-     1 ──┤                          ● "stock market" (far away!)
+     1 ──┤                          ● "stock market" (far!)
          └──┬──┬──┬──┬──┬──┬──┬──── X
             1  2  3  4  5  6  7
 ```
 
 <!-- pause -->
 
-**The intuition:**
-- Close together on the map = similar meaning
+- Close on the map = similar meaning
 - Far apart = different meaning
-- Works the same whether it's 2 dimensions or 1536 — just measuring gap between points
-- The computer does the math; what matters is **closer = more similar**
+- Same idea in 2D or 1536D — **closer = more similar**
 
 <!-- end_slide -->
 
 # The Problem With Raw Distance
 
 ```
-    📄 A 10-page report on "customer churn"
-       → long vector, big numbers
-
-    💬 A 1-line Slack message: "users are churning"
-       → short vector, small numbers
+    📄 10-page report on "customer churn" → long vector
+    💬 1-line Slack message: "users are churning" → short vector
 ```
 
 <!-- pause -->
 
-Raw distance says they're **far apart** — because one is "bigger."
-
+Raw distance says **far apart** — one is just "bigger."
 But they mean the **same thing!**
-
-*Like saying two people pointing at the same star are "far apart"
-because one has a longer arm.*
 
 <!-- pause -->
 
-**Need a measure that ignores length, only cares about direction...**
+*Like two people pointing at the same star — one arm is longer.*
+
+→ Need a measure that ignores length, only cares about **direction**...
 
 <!-- end_slide -->
 
 # Cosine Similarity — The Angle Between Meanings
-
-**Measure the angle between two arrows, not the distance:**
 
 ![](images/cosine-similarity-angle.png)
 
@@ -234,16 +209,15 @@ because one has a longer arm.*
 
 | Angle | Cosine | Meaning |
 |-------|--------|---------|
-| 0° (same direction) | 1.0 | Identical |
+| 0° | 1.0 | Identical |
 | 30° | 0.87 | Very similar |
 | 60° | 0.50 | Somewhat related |
-| 90° (perpendicular) | 0.0 | Unrelated |
+| 90° | 0.0 | Unrelated |
 
 <!-- pause -->
 
-The division by lengths **cancels out size** — a 10-page doc and a 1-line message about the same topic score ~1.0.
-
-**This is why semantic search works** — matches *meaning direction*, not document length.
+- Cancels out size → 10-page doc and 1-line message score the same
+- Matches *direction* (meaning), not length
 
 <!-- end_slide -->
 
@@ -272,72 +246,59 @@ python scripts/similarity_demo.py
 
 # How Text Becomes Numbers — The 5-Year-Old Version
 
-**Imagine teaching a child what words mean by playing a game:**
-
-<!-- pause -->
-
-🎮 **The "What Goes Together?" game:**
+🎮 **"What Goes Together?" game:**
 
 ```
-"cat" goes with: meow, furry, pet, whiskers, sleep
-"dog" goes with: bark, furry, pet, tail, fetch
-"car" goes with: drive, road, fast, wheels, engine
+"cat" → meow, furry, pet, whiskers
+"dog" → bark, furry, pet, tail
+"car" → drive, road, fast, wheels
 ```
 
 <!-- pause -->
 
-- "cat" and "dog" share words (furry, pet) → they get **similar** numbers
-- "cat" and "car" share almost nothing → they get **different** numbers
+- cat & dog share context (furry, pet) → **similar** numbers
+- cat & car share nothing → **different** numbers
 
 <!-- pause -->
 
-**That's essentially Word2Vec (2013):**
+**Word2Vec (2013):** Words in similar contexts get similar coordinates.
 
-- Look at which words appear near each other in billions of sentences
-- Words that appear in similar company get similar number-coordinates
-- "King" - "Man" + "Woman" ≈ "Queen" (the numbers actually do this!)
+`"King" - "Man" + "Woman" ≈ "Queen"` ← the math actually works!
 
 <!-- pause -->
 
-**Modern models (transformers) do the same thing but with context:**
-
-```
-Step 1: Every word gets an ID → "love" = Token #2981
-Step 2: ID → starter numbers   → [0.41, 0.08, -0.22, ... × 1536]
-Step 3: Context adjusts them   → numbers change based on surrounding words
-```
+**Modern models add context on top:**
+- Same word "love" gets different numbers in "love fries" vs "love letter"
 
 <!-- end_slide -->
 
 # Context Changes the Numbers
 
-The same word gets *different* numbers depending on surroundings:
+Same word → *different* numbers depending on surroundings:
 
 <!-- pause -->
 
 ```
-"I love fries"     → "love" adjusted toward food/enjoyment
-"I love coding"    → "love" adjusted toward passion/tech
-"love letter"      → "love" adjusted toward romance/emotion
+"I love fries"     → "love" = food/enjoyment
+"I love coding"    → "love" = passion/tech
+"love letter"      → "love" = romance
 ```
 
 <!-- pause -->
 
-**Why this matters — same words, completely different meanings:**
+**Same spelling, completely different meanings:**
 
 ```
-"The bank was steep"           → riverbank (geography)
+"The bank was steep"           → riverbank
 "The bank was closed"          → financial institution
 
-"She saw a bat"                → animal? sports equipment?
-"He plays Java all day"        → programming language? gamelan music?
+"She saw a bat"                → animal or sports equipment?
 
 "Apple released a new product" → tech company
 "Apple released a sweet aroma" → fruit
 ```
 
-The attention layers (32-128 passes) keep refining each word's numbers
-based on context. **This is why AI handles ambiguity well.**
+**This is why AI handles ambiguity well** — context refines the numbers.
 
 <!-- end_slide -->
 
@@ -389,28 +350,23 @@ python scripts/tokenization_demo.py
 
 # How Semantic Search Works
 
-**Keyword search:** "fries" only finds documents containing "fries"
-
-**Semantic search:** "fries" also finds "crispy potato snacks"
+**Keyword search:** "fries" → only finds docs containing "fries"
+**Semantic search:** "fries" → also finds "crispy potato snacks"
 
 <!-- pause -->
 
 ```
-Ask: "Why are users dropping off during checkout?"
-              ↓
-    📍 Drop a pin on the meaning map
-              ↓
-    📚 Find nearest neighbors:
-              ↓
-    ✅ "Cart abandonment analysis Q4 2025"       (nearby!)
-    ✅ "Reducing friction in the purchase flow"  (nearby!)
-    ❌ "How to fry an egg"                       (across town)
+Query: "Why are users dropping off during checkout?"
+         ↓ (drop a pin on the meaning map)
+
+    ✅ "Cart abandonment analysis Q4"        (nearby!)
+    ✅ "Reducing friction in purchase flow"  (nearby!)
+    ❌ "How to fry an egg"                   (across town)
 ```
 
 <!-- pause -->
 
-Found "cart abandonment" without ever saying those words.
-**Meaning-based search > keyword search.**
+Found "cart abandonment" without saying those words. **Meaning > keywords.**
 
 <!-- end_slide -->
 
@@ -437,35 +393,24 @@ Found "cart abandonment" without ever saying those words.
 
 # How LLMs Generate Text
 
-**A probability game, one word at a time:**
-
-<!-- pause -->
+**One word at a time — a probability game:**
 
 ```
 Input: "The capital of France is"
 
-    Paris       → 94.2%  ████████████████████████████████████████░
-    a           →  1.8%  █░
-    located     →  1.1%  █░
-    known       →  0.7%  ░
-    banana      →  0.0001%
+    Paris   → 94.2%  ████████████████████████████████████░
+    a       →  1.8%  █░
+    located →  1.1%  █░
+    banana  →  0.0%
 
     Picks: "Paris"
 ```
 
 <!-- pause -->
 
-Then feeds the whole thing back and predicts the *next* word:
+Then feeds it back and predicts the *next* word. And the next. And the next.
 
-```
-"The capital of France is"       → Paris
-"The capital of France is Paris" → ,
-"The capital of France is Paris," → known
-...
-```
-
-**Every word is a separate prediction.** That "typing" effect isn't flair —
-it's literally generating one token at a time.
+**That "typing" effect isn't flair — it's literally generating one token at a time.**
 
 <!-- end_slide -->
 
@@ -487,10 +432,6 @@ Shows:
 
 # Attention — How AI Decides What Matters
 
-**Not every word gets equal weight. Like reading a contract — eyes jump to key clauses.**
-
-<!-- pause -->
-
 ```
 "As a QA engineer, write test cases for the LOGIN page
  focusing on SECURITY edge cases"
@@ -501,13 +442,12 @@ Shows:
     focusing  on  SECURITY  edge  cases
     ███       ▁   ██████    ████  ███
 
-    █ = high attention     ▁ = low attention (filler)
+    █ = high attention     ▁ = low attention
 ```
 
 <!-- pause -->
 
-**Specific, keyword-rich prompts work better** because the AI literally
-pays more *attention* to meaningful words.
+**Specific, keyword-rich prompts → higher attention on what matters.**
 
 <!-- end_slide -->
 
@@ -527,103 +467,70 @@ Shows each word colored by attention weight:
 
 # Under the Hood — Matrix Multiplication
 
-**Why does matrix multiplication matter for AI?**
-
-<!-- pause -->
-
 ![](images/matrix-multiplication-intuition.png)
 
 <!-- pause -->
 
-**Think of it like this:**
-
-- Input = a spreadsheet of numbers representing the prompt
-- Weights = a massive lookup table of patterns the AI learned
-- Multiplying them = "looking up" what patterns match the input
-
-<!-- pause -->
-
-| Concept | The Matrix Operation |
+| Concept | Matrix Operation |
 |---|---|
-| Embedding (text → numbers) | Lookup in a learned matrix |
-| Attention (which words matter) | Query matrix × Key matrix |
-| Predicting next word | Multiply through 96+ layers |
+| Embedding | Lookup in a learned matrix |
+| Attention | Query × Key matrix |
+| Prediction | Multiply through 96+ layers |
 
 <!-- pause -->
 
-One prompt through GPT-4: **trillions** of multiply-and-add operations.
-That's why GPUs exist — they do matrix math in parallel.
+One prompt = **trillions** of multiply-and-add ops. That's why GPUs exist.
 
 <!-- end_slide -->
 
 # Why LLMs Cost So Much
 
-**Training = adjusting billions of numbers until predictions improve.**
-
-<!-- pause -->
-
 ```
-    Step 1: Feed a sentence with a missing word
-    Step 2: Model predicts (wrong at first)
-    Step 3: Compare to the real answer
-    Step 4: Adjust matrix values slightly
-    Step 5: Repeat for TRILLIONS of examples
-         ↺ (months of GPU time)
+    Feed sentence with missing word → Model predicts → Compare →
+    Adjust weights → Repeat TRILLIONS of times ↺
 ```
 
 <!-- pause -->
 
 | What | Scale (estimated) |
 |------|-------|
-| Parameters to tune | ~1.8 trillion |
-| Training examples | Trillions of tokens |
-| GPUs needed | ~25,000 in parallel |
-| Training time | ~3-4 months non-stop |
+| Parameters | ~1.8 trillion |
+| GPUs | ~25,000 in parallel |
+| Time | ~3-4 months non-stop |
 | Cost | $50-100 million per run |
 
 <!-- pause -->
 
-**Why this matters:**
 - API calls cost money → renting GPU time
-- Bigger models = slower → more matrices to traverse
-- Fine-tuning cheaper than from-scratch → adjusting vs. building
-- Small models (7B) run on a laptop; frontier (400B+) need data centers
+- Bigger = slower and more expensive
+- Fine-tuning cheaper than from-scratch
+- 7B runs on a laptop; 400B+ needs a data center
 
 <!-- end_slide -->
 
 # Temperature — The Creativity Dial
 
-```
-Next word probabilities: Paris (94%), Lyon (3%), a (2%), the (1%)
-```
-
-<!-- pause -->
-
-| Temperature | Behavior | Good for |
+| Temperature | Behavior | Use for |
 |---|---|---|
-| 0 - 0.3 | Predictable, factual | Test cases, data extraction |
-| 0.5 - 0.8 | Balanced | General writing, brainstorming |
-| 0.9 - 1.5 | Creative, surprising | Diverse ideas, creative writing |
+| 0 - 0.3 | Predictable | Test cases, extraction |
+| 0.5 - 0.8 | Balanced | General writing |
+| 0.9 - 1.5 | Creative | Brainstorming, ideas |
 
 <!-- pause -->
 
-- **Same prompt, different answers each time** → temperature adds randomness
-- Lower it for factual tasks, raise it for creative ones
-- Other dials exist (Top-K, Top-P) but temperature is most common
+- Same prompt → different answers each time (temperature adds randomness)
+- Lower for facts, higher for creativity
 
 <!-- end_slide -->
 
 # Putting It All Together
 
-**From typing to response:**
-
 ![](images/full-pipeline.png)
 
 <!-- pause -->
 
-- The "typing" effect = literally generating one token at a time
-- Each step is a separate prediction
-- The further it goes, the more small errors can compound
+- Typing effect = generating one token at a time
+- Each step is independent → errors compound over long outputs
 
 <!-- end_slide -->
 
@@ -693,65 +600,57 @@ Format: table [ID, Scenario,
 
 # Context Management — The Hidden Skill
 
-**The AI's memory = a desk. It can ONLY see what's on the desk right now.**
+**AI memory = a desk. Only sees what's on it right now.**
 
 ```
 ┌──────────────────────────────────────────┐
 │              THE AI's DESK               │
-│                                          │
 │  📄 Current message                      │
 │  📄 Previous messages in this chat       │
-│  📄 Any documents pasted in              │
+│  📄 Documents pasted in                  │
 │  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
-│  🗑️ Older stuff falls off the desk       │
+│  🗑️ Older stuff falls off               │
 └──────────────────────────────────────────┘
 ```
 
 <!-- pause -->
 
-**Rules:**
-
-- **Start fresh** for new topics — don't continue cluttered conversations
-- **Paste context explicitly** — it doesn't "remember" from 20 messages ago
-- **Be selective** — paste the relevant file, not the entire codebase
-- **Summarize long chats** — distill key decisions, start new thread
+- Start fresh for new topics
+- Paste context explicitly — it doesn't "remember"
+- Be selective — relevant file, not entire codebase
+- Summarize long chats → start new thread
 
 <!-- end_slide -->
 
 # RAG: How AI Uses Internal Docs
 
-**Problem:** ChatGPT doesn't know internal docs, specs, or Confluence pages.
-**Solution:** Fetch relevant documents first, *then* ask.
+**Problem:** AI doesn't know internal docs.
+**Solution:** Fetch first, then ask. (**R**etrieval **A**ugmented **G**eneration)
 
 <!-- pause -->
 
-**RAG = Retrieval Augmented Generation**
-
 ```
-Question: "What's our refund policy for enterprise?"
-              ↓
-  ┌──────────────────────────────┐
-  │ 1. RETRIEVE                  │
-  │    Search internal docs      │
-  │    using the meaning map     │
-  └──────────────┬───────────────┘
+"What's our refund policy for enterprise?"
+         ↓
+  ┌────────────────────────────┐
+  │ 1. RETRIEVE — search docs  │
+  │    using the meaning map   │
+  └──────────────┬─────────────┘
                  ↓
-  ┌──────────────────────────────┐
-  │ 2. AUGMENT                   │
-  │    Put docs on the desk      │
-  │    alongside the question    │
-  └──────────────┬───────────────┘
+  ┌────────────────────────────┐
+  │ 2. AUGMENT — put docs on   │
+  │    the desk with question  │
+  └──────────────┬─────────────┘
                  ↓
-  ┌──────────────────────────────┐
-  │ 3. GENERATE                  │
-  │    AI answers using the docs │
-  │    as source of truth        │
-  └──────────────────────────────┘
+  ┌────────────────────────────┐
+  │ 3. GENERATE — answer using │
+  │    the docs as truth       │
+  └────────────────────────────┘
 ```
 
 <!-- pause -->
 
-**Garbage docs in → garbage answers out.** Good documentation pays off double now.
+**Garbage docs in → garbage answers out.**
 
 <!-- end_slide -->
 
@@ -781,16 +680,15 @@ Question: "What's our refund policy for enterprise?"
 
 <!-- pause -->
 
-| Concept | Analogy | What it is |
-|---|---|---|
-| **Skills** | Recipes | Pre-defined instructions for common tasks |
-| **Agents** | Assistants with a JD | Role + tools + boundaries |
-| **System Prompt** | The job description | Instructions that shape AI behavior |
+| Concept | Analogy |
+|---|---|
+| **Skills** | Recipes — pre-built task instructions |
+| **Agents** | Assistants — role + tools + boundaries |
+| **System Prompt** | Job description — shapes behavior |
 
 <!-- pause -->
 
-When configuring a custom GPT, a Kiro agent, or any AI assistant —
-that's writing the job description. Better JD → better assistant.
+Better job description → better assistant.
 
 <!-- end_slide -->
 
@@ -800,56 +698,43 @@ that's writing the job description. Better JD → better assistant.
 
 <!-- pause -->
 
-| Traditional Testing | AI Feature Testing |
+| Traditional | AI Features |
 |---|---|
-| Same input → same output | Same input → *different* output |
+| Same input → same output | Same input → different output |
 | Exact-match assertions | "Good enough" evaluation |
-| Code changes = behavior changes | Model update = silent behavior shift |
-| Edge cases are predictable | Edge cases are surprising |
+| Code change = behavior change | Model update = silent shift |
 
 <!-- pause -->
 
-**What to watch for:**
-- 🔄 **Regression without code changes** — model updates shift behavior silently
-- ⚖️ **Bias** — test with diverse inputs (names, languages, demographics)
-- 🎭 **Confidence ≠ correctness** — test for hallucinations on known-answer questions
+- 🔄 Regression without code changes — keep golden test sets
+- ⚖️ Bias — test diverse inputs
+- 🎭 Confidence ≠ correctness — verify with known answers
 
 <!-- end_slide -->
 
 # Better Inputs → Better Outputs
 
-**The single biggest takeaway from this talk.**
-
-<!-- pause -->
-
-- Well-structured acceptance criteria → better AI-generated solutions
-- Clear user stories with context → AI generates edge cases automatically
-- Explicit constraints → AI respects them
-
-<!-- pause -->
-
 ```
 ❌ "As a user, I want to log in"
 
-✅ "As an enterprise user with SSO enabled,
-    I want to log in via SAML 2.0,
-    with fallback to email/password if IdP is down,
-    session timeout at 30 min of inactivity"
+✅ "Enterprise user, SSO via SAML 2.0,
+    fallback to email/password if IdP down,
+    30 min session timeout on inactivity"
 ```
 
 <!-- pause -->
-
-**Before / After for bug reports:**
 
 ```
 ❌ "Login doesn't work sometimes"
 
-✅ "Login fails 401 when SSO token expires during 2FA step.
-    After 5 min idle. Chrome 124. Staging.
-    Steps: Start SSO → wait 5 min at 2FA → enter code → 401"
+✅ "Login 401 when SSO token expires during 2FA.
+    5 min idle. Chrome 124. Staging.
+    SSO → wait 5 min → enter code → 401"
 ```
 
-AI output quality is *directly proportional* to input quality.
+<!-- pause -->
+
+**AI output quality ∝ input quality.**
 
 <!-- end_slide -->
 
