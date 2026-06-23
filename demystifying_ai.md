@@ -5,12 +5,14 @@ theme:
   override:
     footer:
       style: template
-      left: "Jeevan | Jun 2025"
+      left: "Jeevan | Jun 2026"
       right: "{current_slide} / {total_slides}"
 ---
 
 # Demystifying AI
 ## What's Actually Happening When You Talk to an LLM
+
+![image:w:60%](images/title-slide-ai.png)
 
 <!-- pause -->
 
@@ -85,6 +87,16 @@ Most of us use them like a **black box:**
 
 # Part 1: Unboxing the Magic
 
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+## 🔍 What's really happening under the hood
+
+&nbsp;
+
 ![image:w:50%](images/gifs/flipping-papers.gif)
 
 <!-- end_slide -->
@@ -122,19 +134,16 @@ Most of us use them like a **black box:**
 # The Meaning Map
 
 ```
-    ┌─────────────────────────────────────────────┐
-    │   🍟 "fries"    🍔 "burgers"               │
-    │      🥔 "potato snacks"                     │
-    │                          FOOD DISTRICT      │
-    │─────────────────────────────────────────────│
-    │   💻 "machine learning"   🤖 "neural nets" │
-    │      📊 "data science"                      │
-    │                          TECH DISTRICT      │
-    │─────────────────────────────────────────────│
-    │   📈 "stock market"   💰 "trading"          │
-    │      🏦 "investments"                       │
-    │                        FINANCE DISTRICT     │
-    └─────────────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  🍟 "fries"   🍔 "burgers"          │
+│  🥔 "potato snacks"   FOOD DISTRICT │
+│──────────────────────────────────────│
+│  💻 "machine learning"  🤖 "AI"     │
+│  📊 "data science"    TECH DISTRICT │
+│──────────────────────────────────────│
+│  📈 "stock market"  💰 "trading"    │
+│  🏦 "investments" FINANCE DISTRICT │
+└──────────────────────────────────────┘
 ```
 
 - Same neighborhood = similar meaning
@@ -183,15 +192,7 @@ Most of us use them like a **black box:**
 
 # The Problem With Raw Distance
 
-```
-    📄 10-page report on "customer churn" → long vector
-    💬 1-line Slack message: "users are churning" → short vector
-```
-
-<!-- pause -->
-
-Raw distance says **far apart** — one is just "bigger."
-But they mean the **same thing!**
+![image:w:70%](images/raw-distance-problem.png)
 
 <!-- pause -->
 
@@ -230,16 +231,16 @@ python scripts/similarity_demo.py
 <!-- pause -->
 
 ```
-╔══════════════════════════════════════════════════════╗
-║  COSINE SIMILARITY — meaning direction, not length  ║
-╠══════════════════════════════════════════════════════╣
-║                                                      ║
-║  "customer churn" vs "users cancelling"   → 0.91 ✅ ║
-║  "customer churn" vs "french fries recipe" → 0.12 ❌ ║
-║                                                      ║
-║  Same meaning = high score (close to 1.0)           ║
-║  Different meaning = low score (close to 0.0)       ║
-╚══════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════╗
+║  COSINE SIMILARITY — meaning, not length      ║
+╠════════════════════════════════════════════════╣
+║                                                ║
+║  "customer churn" vs "users cancelling" → 0.91║
+║  "customer churn" vs "fries recipe"     → 0.12║
+║                                                ║
+║  High score = same meaning                    ║
+║  Low score  = different topic                 ║
+╚════════════════════════════════════════════════╝
 ```
 
 <!-- end_slide -->
@@ -332,18 +333,18 @@ python scripts/tokenization_demo.py
 <!-- pause -->
 
 ```
-╔═══════════════════════════════════════════════╗
-║  TOKENIZATION — How AI reads text            ║
-╠═══════════════════════════════════════════════╣
-║                                               ║
-║  "I love french fries"                       ║
-║   → [I] [love] [french] [fries] = 4 tokens  ║
-║                                               ║
-║  "Unbelievable!"                             ║
-║   → [Un][believ][able][!] = 4 tokens         ║
-║                                               ║
-║  Rule of thumb: 100 words ≈ 133 tokens       ║
-╚═══════════════════════════════════════════════╝
+╔══════════════════════════════════════════╗
+║  TOKENIZATION — How AI reads text       ║
+╠══════════════════════════════════════════╣
+║                                          ║
+║  "I love french fries"                  ║
+║   → [I][love][french][fries] = 4 tokens ║
+║                                          ║
+║  "Unbelievable!"                        ║
+║   → [Un][believ][able][!] = 4 tokens    ║
+║                                          ║
+║  Rule of thumb: 100 words ≈ 133 tokens  ║
+╚══════════════════════════════════════════╝
 ```
 
 <!-- end_slide -->
@@ -387,7 +388,7 @@ Found "cart abandonment" without saying those words. **Meaning > keywords.**
 ```
 Input: "The capital of France is"
 
-    Paris   → 94.2%  ████████████████████████████████████░
+    Paris   → 94.2%  ██████████████████████████░
     a       →  1.8%  █░
     located →  1.1%  █░
     banana  →  0.0%
@@ -422,14 +423,14 @@ Shows:
 # Attention — How AI Decides What Matters
 
 ```
-"As a QA engineer, write test cases for the LOGIN page
- focusing on SECURITY edge cases"
+"As a QA engineer, write test cases for the
+ LOGIN page focusing on SECURITY edge cases"
 
-    As  a  QA  engineer  write  test  cases  for  the  LOGIN  page
-    ▁   ▁  ██  ███      ██     ███   ███    ▁    ▁    █████  ██
+    As a  QA  engineer write test cases for the
+    ▁  ▁  ██  ███     ██    ███  ███   ▁   ▁
 
-    focusing  on  SECURITY  edge  cases
-    ███       ▁   ██████    ████  ███
+    LOGIN  page focusing on SECURITY edge cases
+    █████  ██   ███     ▁   ██████  ████  ███
 
     █ = high attention     ▁ = low attention
 ```
@@ -456,73 +457,79 @@ Shows each word colored by attention weight:
 
 # Under the Hood — Why Matrices?
 
-**The AI needs to process ALL words SIMULTANEOUSLY. Matrices make that possible.**
-
-<!-- pause -->
+**Each word = a row of numbers. The AI processes ALL words at once.**
 
 ```
-Without matrices (one word at a time):
-  "Write" → process → done
-  "test"  → process → done     SLOW 🐌 (sequential)
-  "cases" → process → done
-
-With matrices (all at once):
-  ┌ "Write" ┐         ┌ result 1 ┐
-  │ "test"  │ × [AI] =│ result 2 │   FAST ⚡ (parallel)
-  └ "cases" ┘         └ result 3 ┘
+"Write" → [0.4, 0.1, 0.8, ...]  ┐
+"test"  → [0.3, 0.7, 0.2, ...]  │ ← this IS a matrix
+"cases" → [0.1, 0.9, 0.5, ...]  ┘
 ```
 
 <!-- pause -->
 
-**Why this shape?**
-- Each word is a row of 1536 numbers (its meaning coordinates)
-- The AI's "brain" is a grid of learned patterns
-- Multiplying = comparing every word against every pattern at once
-- GPUs can do this in parallel — that's their entire purpose
+**To figure out distance between meanings (like y = mx + c, but for similarity):**
+
+```
+    d = √( (a₁-b₁)² + (a₂-b₂)² + ... + (aₙ-bₙ)² )
+```
+
+Doing this for every word pair, across 1536 dimensions, across 96 layers
+= trillions of operations. **Matrices let GPUs do it all in parallel.**
 
 <!-- pause -->
 
-One prompt through GPT-4: multiply through **96+ layers**, each with millions of pattern entries.
+![image:w:80%](images/matrix-multiplication-intuition.png)
+
+<!-- end_slide -->
+
+# The Complexity Explosion — Why GPUs?
+
+```
+"customer churn" → [0.82, -0.14, 0.67, 0.03, -0.91, ... ×1536]
+"users leaving"  → [0.79, -0.11, 0.63, 0.05, -0.88, ... ×1536]
+```
+
+<!-- pause -->
+
+![image:w:85%](images/complexity-explosion.png)
 
 <!-- end_slide -->
 
 # Why LLMs Cost So Much
 
+**Training = adjusting all weights until predictions improve:**
+
 ```
-    Feed sentence with missing word → Model predicts → Compare →
-    Adjust weights → Repeat TRILLIONS of times ↺
+┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐
+│  Feed  │─▶│ Model  │─▶│Compare │─▶│ Adjust │─┐
+│sentence│  │predicts│  │to real │  │weights │ │
+└────────┘  └────────┘  └────────┘  └────────┘ │
+     ▲                                          │
+     └──────── repeat TRILLIONS of times ◀──────┘
 ```
 
 <!-- pause -->
 
-| What | Scale (estimated) |
-|------|-------|
-| Parameters | ~1.8 trillion |
-| GPUs | ~25,000 in parallel |
-| Time | ~3-4 months non-stop |
-| Cost | $50-100 million per run |
+| What | GPT-4 Scale |
+|------|-------------|
+| Parameters (weights to tune) | ~1.8 trillion |
+| GPUs (A100s, in parallel) | ~25,000 |
+| Training duration | ~90-100 days non-stop |
+| Compute cost | $78-100+ million |
+
+*Sources: OpenAI CEO confirmed >$100M; semi-analysis estimates*
 
 <!-- pause -->
 
-- API calls cost money → renting GPU time
-- Bigger = slower and more expensive
-- Fine-tuning cheaper than from-scratch
-- 7B runs on a laptop; 400B+ needs a data center
+- API calls cost money → renting time on these GPU clusters
+- Fine-tuning = adjusting an already-trained model → much cheaper
+- 7B model fits on a laptop; 400B+ needs a data center
 
 <!-- end_slide -->
 
 # Temperature — The Creativity Dial
 
-| Temperature | Behavior | Use for |
-|---|---|---|
-| 0 - 0.3 | Predictable | Test cases, extraction |
-| 0.5 - 0.8 | Balanced | General writing |
-| 0.9 - 1.5 | Creative | Brainstorming, ideas |
-
-<!-- pause -->
-
-- Same prompt → different answers each time (temperature adds randomness)
-- Lower for facts, higher for creativity
+![image:w:85%](images/temperature-dial.png)
 
 <!-- end_slide -->
 
@@ -539,9 +546,23 @@ One prompt through GPT-4: multiply through **96+ layers**, each with millions of
 
 # Part 2: Day-to-Day Skills
 
-## Practical application of what was just covered
+<!-- column_layout: [1, 2, 1] -->
+
+<!-- column: 0 -->
+
+<!-- column: 1 -->
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+## 🛠️ Practical application of what was just covered
 
 *From mental models to daily workflow*
+
+<!-- column: 2 -->
 
 <!-- end_slide -->
 
@@ -594,14 +615,14 @@ Format: table [ID, Scenario,
 **AI memory = a desk. Only sees what's on it right now.**
 
 ```
-┌──────────────────────────────────────────┐
-│              THE AI's DESK               │
-│  📄 Current message                      │
-│  📄 Previous messages in this chat       │
-│  📄 Documents pasted in                  │
-│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
-│  🗑️ Older stuff falls off               │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────┐
+│          THE AI's DESK             │
+│  📄 Current message                │
+│  📄 Previous messages in this chat │
+│  📄 Documents pasted in            │
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│  🗑️ Older stuff falls off          │
+└────────────────────────────────────┘
 ```
 
 <!-- pause -->
@@ -647,9 +668,23 @@ Format: table [ID, Scenario,
 
 # Part 3: Working Smarter with AI
 
-## Practical patterns for teams
+<!-- column_layout: [1, 2, 1] -->
+
+<!-- column: 0 -->
+
+<!-- column: 1 -->
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+## 🚀 Practical patterns for teams
 
 *Skills, testing, and getting better outputs*
+
+<!-- column: 2 -->
 
 <!-- end_slide -->
 
@@ -808,29 +843,29 @@ Structured specs and clear context make AI dramatically more useful.
 # Appendix: The Transformer Architecture
 
 ```
-    ┌─────────────────────────────────────────┐
-    │           YOUR PROMPT                    │
-    └──────────────────┬──────────────────────┘
-                       ↓
-    ┌──────────────────────────────────────────┐
-    │  TOKENIZER — split into chunks           │
-    └──────────────────┬───────────────────────┘
-                       ↓
-    ┌──────────────────────────────────────────┐
-    │  EMBEDDING — each token → meaning map    │
-    └──────────────────┬───────────────────────┘
-                       ↓
-    ┌──────────────────────────────────────────┐
-    │  ATTENTION LAYERS  (× 32 to 128)         │
-    │  Layer 1:  basic grammar                 │
-    │  Layer 12: relationships                 │
-    │  Layer 40: abstract reasoning            │
-    │  Layer 96: task-specific patterns        │
-    └──────────────────┬───────────────────────┘
-                       ↓
-    ┌──────────────────────────────────────────┐
-    │  OUTPUT — probabilities for next token   │
-    └──────────────────────────────────────────┘
+    ┌───────────────────────────────────┐
+    │         YOUR PROMPT               │
+    └───────────────┬───────────────────┘
+                    ↓
+    ┌───────────────────────────────────┐
+    │  TOKENIZER — split into chunks    │
+    └───────────────┬───────────────────┘
+                    ↓
+    ┌───────────────────────────────────┐
+    │  EMBEDDING — token → meaning map  │
+    └───────────────┬───────────────────┘
+                    ↓
+    ┌───────────────────────────────────┐
+    │  ATTENTION LAYERS (× 32 to 128)   │
+    │  Layer 1:  grammar                │
+    │  Layer 12: relationships          │
+    │  Layer 40: reasoning              │
+    │  Layer 96: task output            │
+    └───────────────┬───────────────────┘
+                    ↓
+    ┌───────────────────────────────────┐
+    │  OUTPUT — next token probabilities│
+    └───────────────────────────────────┘
 ```
 
 More layers = deeper understanding. GPT-4 has ~120 layers.

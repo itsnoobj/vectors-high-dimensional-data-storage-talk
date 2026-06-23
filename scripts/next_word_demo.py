@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
-"""Demystifying AI — next-word prediction & how temperature steers it."""
+"""Demystifying AI — interactive next-word prediction & how temperature steers it.
+
+SIMULATION ONLY: probability distributions are hardcoded, not from a real model.
+"""
+import difflib
 import math
 import random
 import time
 
 C = "\033[96m"; G = "\033[92m"; Y = "\033[93m"; D = "\033[2m"; B = "\033[1m"; R = "\033[0m"
 
-PROMPT = "The capital of France is"
-
-# Hardcoded "logits" — raw scores the model would produce for next words.
-WORDS = ["Paris", "Lyon", "located", "famous", "Marseille", "home"]
-LOGITS = [6.0, 2.5, 2.0, 1.5, 1.2, 1.0]
+# ~5 pre-built prompts → (next words, raw "logits").
+PROMPTS = {
+    "the capital of france is": (["Paris", "Lyon", "located", "famous", "Marseille", "home"],
+                                 [6.0, 2.5, 2.0, 1.5, 1.2, 1.0]),
+    "once upon a":              (["time", "midnight", "dream", "while", "star", "hill"],
+                                 [6.5, 2.0, 1.8, 2.2, 1.0, 0.8]),
+    "the weather today is":     (["sunny", "cloudy", "cold", "warm", "rainy", "nice"],
+                                 [4.0, 3.5, 3.0, 2.8, 2.5, 2.2]),
+    "i love to":                (["code", "travel", "eat", "read", "sing", "learn"],
+                                 [3.8, 3.5, 3.2, 3.0, 2.0, 2.6]),
+    "machine learning is":      (["powerful", "hard", "fun", "everywhere", "math", "magic"],
+                                 [4.2, 3.0, 2.8, 2.5, 2.2, 1.5]),
+}
+GENERIC = (["the", "a", "and", "to", "of", "that"], [3.0, 2.8, 2.6, 2.4, 2.2, 2.0])
 
 
 def softmax(logits, temperature):
-    if temperature <= 0:  # greedy: all mass on the top word
+    if temperature <= 0:
         top = logits.index(max(logits))
         return [1.0 if i == top else 0.0 for i in range(len(logits))]
     z = [x / temperature for x in logits]
@@ -25,8 +38,7 @@ def softmax(logits, temperature):
 
 
 def weighted_choice(rng, words, probs):
-    r = rng.random()
-    acc = 0.0
+    r, acc = rng.random(), 0.0
     for w, p in zip(words, probs):
         acc += p
         if r <= acc:
@@ -34,41 +46,52 @@ def weighted_choice(rng, words, probs):
     return words[-1]
 
 
-def bar_chart(probs):
+def bar_chart(words, probs):
     top = max(probs)
-    for w, p in sorted(zip(WORDS, probs), key=lambda x: -x[1]):
+    for w, p in sorted(zip(words, probs), key=lambda x: -x[1]):
         blocks = "█" * int(round(p * 30))
         col = G if p == top else C
         print(f"    {w:<11}{col}{blocks}{R} {D}{p * 100:5.1f}%{R}")
-        time.sleep(0.15)
+        time.sleep(0.12)
 
 
 def main():
     print("=" * 60)
     print(f"  {C}{B}NEXT-WORD PREDICTION: It's Just Probabilities{R}")
     print("=" * 60)
-    print(f'\n  Prompt: "{B}{PROMPT}{R} ___"\n')
-    time.sleep(0.8)
+    print(f"  {D}Note: This is a simulation for illustration (hardcoded logits).{R}\n")
+    print(f"  {D}Known prompts:{R} " + f"{D}|{R} ".join(f'"{p}"' for p in PROMPTS))
 
-    for temp in (0.0, 0.7, 1.5):
-        label = "greedy" if temp == 0 else ("balanced" if temp < 1 else "creative")
-        print(f"{Y}── temperature = {temp}  ({label}) ──{R}")
-        bar_chart(softmax(LOGITS, temp))
-        print()
-        time.sleep(0.6)
+    raw = input(f"\n  {B}Type a partial sentence{R} {D}(Enter for 'the capital of france is'){R}: ").strip()
+    prompt = (raw or "the capital of france is").lower().rstrip(" .")
 
-    print("─" * 60)
-    print(f"  {B}Sampling 5 times at each temperature:{R}\n")
+    match = difflib.get_close_matches(prompt, list(PROMPTS), n=1, cutoff=0.6)
+    if match:
+        words, logits = PROMPTS[match[0]]
+        print(f"  {D}→ matched known prompt {Y}\"{match[0]}\"{R}")
+    else:
+        words, logits = GENERIC
+        print(f"  {D}→ {Y}not in the precomputed set{R} — using a generic distribution.{R}")
+
+    t_raw = input(f"  {B}Temperature{R} {D}(Enter for 0.7){R}: ").strip()
+    try:
+        temp = float(t_raw) if t_raw else 0.7
+    except ValueError:
+        print(f"  {D}(couldn't parse '{t_raw}', using 0.7){R}")
+        temp = 0.7
+
+    label = "greedy" if temp <= 0 else ("balanced" if temp < 1 else "creative")
+    print(f'\n  Prompt: "{B}{raw or "the capital of france is"}{R} ___"\n')
+    print(f"{Y}── temperature = {temp}  ({label}) ──{R}")
+    probs = softmax(logits, temp)
+    bar_chart(words, probs)
+    print(f"\n  {B}Sampling 5 times:{R}")
     rng = random.Random(42)
-    for temp in (0.0, 0.7, 1.5):
-        probs = softmax(LOGITS, temp)
-        picks = [weighted_choice(rng, WORDS, probs) for _ in range(5)]
-        print(f"  temp {temp:<4} → {G}{', '.join(picks)}{R}")
-        time.sleep(0.6)
+    picks = [weighted_choice(rng, words, probs) for _ in range(5)]
+    print(f"  {G}{', '.join(picks)}{R}")
 
     print("=" * 60)
-    print(f"  {D}temp=0  → deterministic, always the top token{R}")
-    print(f"  {D}temp↑   → flatter distribution, more variety (and risk){R}")
+    print(f"  {D}temp=0 → always the top token;  temp↑ → flatter, more variety.{R}")
     print("=" * 60)
 
 

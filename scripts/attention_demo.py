@@ -1,53 +1,71 @@
 #!/usr/bin/env python3
-"""Demystifying AI — visualize where a model 'pays attention' in a prompt."""
+"""Demystifying AI — interactive view of where a model 'pays attention'.
+
+SIMULATION ONLY: weights come from a simple heuristic, not a real model.
+"""
 import time
 
-# ANSI
 HI = "\033[92m"; MID = "\033[93m"; LO = "\033[2m"; C = "\033[96m"; B = "\033[1m"; R = "\033[0m"
 
-PROMPT = "As a QA engineer write test cases for the LOGIN page focusing on SECURITY edge cases"
+DEFAULT = "As a QA engineer write test cases for the LOGIN page focusing on SECURITY edge cases"
 
-# Hardcoded attention weights (0..1). Meaningful words score high; filler low.
-WEIGHTS = {
-    "As": 0.05, "a": 0.03, "QA": 0.80, "engineer": 0.75, "write": 0.55,
-    "test": 0.85, "cases": 0.70, "for": 0.05, "the": 0.03, "LOGIN": 0.95,
-    "page": 0.60, "focusing": 0.30, "on": 0.04, "SECURITY": 0.98,
-    "edge": 0.78, "cases": 0.70,
+# Low-signal filler words get almost no attention.
+STOP = {
+    "a", "an", "the", "as", "at", "by", "for", "in", "of", "on", "to", "up", "and",
+    "or", "but", "is", "are", "was", "were", "be", "it", "its", "this", "that", "with",
+    "i", "you", "he", "she", "we", "they", "my", "your", "from", "into", "about",
 }
 
 
+def score(word):
+    """Heuristic attention weight in [0,1] for any token."""
+    bare = "".join(ch for ch in word if ch.isalnum())
+    if not bare:
+        return 0.05
+    if bare.isupper() and len(bare) > 1:   # SHOUTED / emphasized terms
+        return 0.97
+    if bare.lower() in STOP:               # articles, prepositions, pronouns
+        return 0.05
+    if bare[0].isupper():                  # likely proper noun
+        return 0.85
+    if len(bare) >= 7:                     # long content words
+        return 0.80
+    if len(bare) >= 5:
+        return 0.60
+    return 0.35
+
+
 def color_for(w):
-    if w >= 0.7:
-        return HI
-    if w >= 0.4:
-        return MID
-    return LO
+    return HI if w >= 0.7 else (MID if w >= 0.4 else LO)
 
 
 def main():
     print("=" * 66)
     print(f"  {C}{B}ATTENTION: What the Model Focuses On{R}")
     print("=" * 66)
-    print(f"\n  {LO}Not all words matter equally. Attention weights them.{R}\n")
-    time.sleep(0.8)
+    print(f"  {LO}Note: This is a simulation for illustration (heuristic weights).{R}\n")
 
-    words = PROMPT.split()
-    # Inline highlighted sentence
-    rendered = " ".join(f"{color_for(WEIGHTS.get(w, 0.1))}{w}{R}" for w in words)
-    print(f"  {rendered}\n")
-    time.sleep(1.0)
+    raw = input(f"  {B}Type any prompt{R} {LO}(Enter for the default){R}: ").strip()
+    prompt = raw or DEFAULT
+
+    words = prompt.split()
+    weights = {w: score(w) for w in words}
+
+    rendered = " ".join(f"{color_for(weights[w])}{w}{R}" for w in words)
+    print(f"\n  {rendered}\n")
+    time.sleep(0.6)
 
     print("─" * 66)
     print(f"  {B}Attention bars{R}  ({HI}green=high{R}  {MID}yellow=medium{R}  {LO}dim=low{R})\n")
     for w in words:
-        weight = WEIGHTS.get(w, 0.1)
+        weight = weights[w]
         col = color_for(weight)
         bar = "█" * int(round(weight * 30))
-        print(f"  {col}{w:<10}{bar}{R} {LO}{weight:.2f}{R}")
-        time.sleep(0.2)
+        print(f"  {col}{w:<12}{bar}{R} {LO}{weight:.2f}{R}")
+        time.sleep(0.15)
 
     print("=" * 66)
-    top = sorted(words, key=lambda w: WEIGHTS.get(w, 0.1), reverse=True)[:4]
+    top = sorted(set(words), key=lambda w: weights[w], reverse=True)[:4]
     print(f"  Model locks onto: {HI}{', '.join(top)}{R}")
     print(f"  {LO}Filler words (a, the, for, on) get almost no attention.{R}")
     print("=" * 66)
