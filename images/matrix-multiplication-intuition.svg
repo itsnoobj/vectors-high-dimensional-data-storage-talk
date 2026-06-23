@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#0f1419"/>
+  <text x="400" y="46" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="bold" fill="#ffffff" text-anchor="middle">Why Matrix Math Powers LLMs</text>
+
+  <!-- Input matrix (small) -->
+  <g>
+    <rect x="60" y="190" width="90" height="120" rx="6" fill="#13294d" stroke="#4d9bff" stroke-width="2.5"/>
+    <g fill="#9bb8e0" font-family="monospace" font-size="15" text-anchor="middle">
+      <text x="105" y="218">0.2</text>
+      <text x="105" y="248">0.9</text>
+      <text x="105" y="278">0.1</text>
+    </g>
+    <text x="105" y="345" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#4d9bff" text-anchor="middle">Your words</text>
+    <text x="105" y="365" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#8a94a6" text-anchor="middle">(as numbers)</text>
+  </g>
+
+  <!-- multiply symbol -->
+  <text x="210" y="258" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="bold" fill="#ffffff" text-anchor="middle">&#215;</text>
+
+  <!-- Weight matrix (large) -->
+  <g>
+    <rect x="270" y="140" width="200" height="220" rx="6" fill="#2a1f4d" stroke="#9b7bff" stroke-width="2.5"/>
+    <g fill="#c4b8e0" font-family="monospace" font-size="14" text-anchor="middle">
+      <text x="305" y="180">.4</text><text x="350" y="180">.1</text><text x="395" y="180">.7</text><text x="438" y="180">.2</text>
+      <text x="305" y="215">.9</text><text x="350" y="215">.3</text><text x="395" y="215">.5</text><text x="438" y="215">.8</text>
+      <text x="305" y="250">.2</text><text x="350" y="250">.6</text><text x="395" y="250">.1</text><text x="438" y="250">.4</text>
+      <text x="305" y="285">.7</text><text x="350" y="285">.2</text><text x="395" y="285">.9</text><text x="438" y="285">.3</text>
+      <text x="305" y="320">.1</text><text x="350" y="320">.8</text><text x="395" y="320">.4</text><text x="438" y="320">.6</text>
+    </g>
+    <text x="370" y="390" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#9b7bff" text-anchor="middle">What the AI learned</text>
+    <text x="370" y="410" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#8a94a6" text-anchor="middle">(billions of weights)</text>
+  </g>
+
+  <!-- equals -->
+  <text x="510" y="258" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="bold" fill="#ffffff" text-anchor="middle">=</text>
+
+  <!-- Output matrix -->
+  <g>
+    <rect x="560" y="190" width="90" height="120" rx="6" fill="#0f3320" stroke="#3ddc84" stroke-width="2.5"/>
+    <g fill="#9be0b8" font-family="monospace" font-size="15" text-anchor="middle">
+      <text x="605" y="218">0.8</text>
+      <text x="605" y="248">0.3</text>
+      <text x="605" y="278">0.6</text>
+    </g>
+    <text x="605" y="345" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#3ddc84" text-anchor="middle">Prediction</text>
+    <text x="605" y="365" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#8a94a6" text-anchor="middle">scores</text>
+  </g>
+
+  <text x="400" y="460" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffd166" text-anchor="middle">Repeated 96+ layers deep</text>
+</svg>
