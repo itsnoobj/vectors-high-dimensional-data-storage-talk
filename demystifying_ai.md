@@ -43,7 +43,7 @@ Most of us use them like a **black box:**
 
 <!-- column: 1 -->
 
-![image:w:40%](images/gifs/mind-blown.gif)
+![image:w:90%](images/gifs/mind-blown.gif)
 
 <!-- end_slide -->
 
@@ -376,18 +376,7 @@ Found "cart abandonment" without saying those words. **Meaning > keywords.**
 
 <!-- pause -->
 
-| Failure Mode | Why It Happens |
-|---|---|
-| Hallucinations | Most *probable* next word ≠ most *correct* |
-| Knowledge cutoff | Trained data has an end date |
-| Math errors | Predicts text patterns, doesn't calculate |
-| Bias | Reflects training data distributions |
-| Reasoning gaps | Pattern matching ≠ genuine deduction |
-| Context limits | Forgets info beyond the window |
-
-<!-- pause -->
-
-⚠️ **Rule of thumb:** Trust the *structure*, verify the *facts*.
+⚠️ **Trust the structure, verify the facts.**
 
 <!-- end_slide -->
 
@@ -465,21 +454,35 @@ Shows each word colored by attention weight:
 
 <!-- end_slide -->
 
-# Under the Hood — Matrix Multiplication
+# Under the Hood — Why Matrices?
 
-![image:w:50%](images/matrix-multiplication-intuition.png)
-
-<!-- pause -->
-
-| Concept | Matrix Operation |
-|---|---|
-| Embedding | Lookup in a learned matrix |
-| Attention | Query × Key matrix |
-| Prediction | Multiply through 96+ layers |
+**The AI needs to process ALL words SIMULTANEOUSLY. Matrices make that possible.**
 
 <!-- pause -->
 
-One prompt = **trillions** of multiply-and-add ops. That's why GPUs exist.
+```
+Without matrices (one word at a time):
+  "Write" → process → done
+  "test"  → process → done     SLOW 🐌 (sequential)
+  "cases" → process → done
+
+With matrices (all at once):
+  ┌ "Write" ┐         ┌ result 1 ┐
+  │ "test"  │ × [AI] =│ result 2 │   FAST ⚡ (parallel)
+  └ "cases" ┘         └ result 3 ┘
+```
+
+<!-- pause -->
+
+**Why this shape?**
+- Each word is a row of 1536 numbers (its meaning coordinates)
+- The AI's "brain" is a grid of learned patterns
+- Multiplying = comparing every word against every pattern at once
+- GPUs can do this in parallel — that's their entire purpose
+
+<!-- pause -->
+
+One prompt through GPT-4: multiply through **96+ layers**, each with millions of pattern entries.
 
 <!-- end_slide -->
 
@@ -536,21 +539,9 @@ One prompt = **trillions** of multiply-and-add ops. That's why GPUs exist.
 
 # Part 2: Day-to-Day Skills
 
-<!-- column_layout: [1, 1, 1] -->
-
-<!-- column: 0 -->
-
-&nbsp;
-
-<!-- column: 1 -->
-
 ## Practical application of what was just covered
 
 *From mental models to daily workflow*
-
-<!-- column: 2 -->
-
-&nbsp;
 
 <!-- end_slide -->
 
@@ -656,21 +647,9 @@ Format: table [ID, Scenario,
 
 # Part 3: Working Smarter with AI
 
-<!-- column_layout: [1, 1, 1] -->
-
-<!-- column: 0 -->
-
-&nbsp;
-
-<!-- column: 1 -->
-
 ## Practical patterns for teams
 
 *Skills, testing, and getting better outputs*
-
-<!-- column: 2 -->
-
-&nbsp;
 
 <!-- end_slide -->
 
@@ -822,7 +801,7 @@ Structured specs and clear context make AI dramatically more useful.
 
 <!-- column: 1 -->
 
-![image:w:40%](images/gifs/thank-you-bow.gif)
+![image:w:95%](images/gifs/thank-you-bow.gif)
 
 <!-- end_slide -->
 
