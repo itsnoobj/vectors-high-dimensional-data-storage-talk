@@ -134,16 +134,19 @@ Most of us use them like a **black box:**
 # The Meaning Map
 
 ```
-┌──────────────────────────────────────┐
-│  🍟 "fries"   🍔 "burgers"          │
-│  🥔 "potato snacks"   FOOD DISTRICT │
-│──────────────────────────────────────│
-│  💻 "machine learning"  🤖 "AI"     │
-│  📊 "data science"    TECH DISTRICT │
-│──────────────────────────────────────│
-│  📈 "stock market"  💰 "trading"    │
-│  🏦 "investments" FINANCE DISTRICT │
-└──────────────────────────────────────┘
+┌──────────────────────────┬─────────────────────────┐
+│ 🍟 "fries"               │                         │
+│ 🍔 "burgers"             │     FOOD DISTRICT       │
+│ 🥔 "potato snacks"       │                         │
+├──────────────────────────┼─────────────────────────┤
+│ 💻 "machine learning"    │                         │
+│ 🤖 "AI"                  │     TECH DISTRICT       │
+│ 📊 "data science"        │                         │
+├──────────────────────────┼─────────────────────────┤
+│ 📈 "stock market"        │                         │
+│ 💰 "trading"             │   FINANCE DISTRICT      │
+│ 🏦 "investments"         │                         │
+└──────────────────────────┴─────────────────────────┘
 ```
 
 - Same neighborhood = similar meaning
@@ -231,16 +234,16 @@ python scripts/similarity_demo.py
 <!-- pause -->
 
 ```
-╔════════════════════════════════════════════════╗
-║  COSINE SIMILARITY — meaning, not length      ║
-╠════════════════════════════════════════════════╣
-║                                                ║
-║  "customer churn" vs "users cancelling" → 0.91║
-║  "customer churn" vs "fries recipe"     → 0.12║
-║                                                ║
-║  High score = same meaning                    ║
-║  Low score  = different topic                 ║
-╚════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════
+║ 🔍 COSINE SIMILARITY — meaning, not length
+╠═════════════════════════════════════════════════════
+║
+║ 👥 "customer churn" vs "users cancelling" → 0.91
+║ 🍟 "customer churn" vs "fries recipe"     → 0.12
+║
+║ ✅ High score = same meaning
+║ ❌ Low score  = different topic
+╚═════════════════════════════════════════════════════
 ```
 
 <!-- end_slide -->
@@ -333,18 +336,18 @@ python scripts/tokenization_demo.py
 <!-- pause -->
 
 ```
-╔══════════════════════════════════════════╗
-║  TOKENIZATION — How AI reads text       ║
-╠══════════════════════════════════════════╣
-║                                          ║
-║  "I love french fries"                  ║
-║   → [I][love][french][fries] = 4 tokens ║
-║                                          ║
-║  "Unbelievable!"                        ║
-║   → [Un][believ][able][!] = 4 tokens    ║
-║                                          ║
-║  Rule of thumb: 100 words ≈ 133 tokens  ║
-╚══════════════════════════════════════════╝
+╔══════════════════════════════════════════
+║  TOKENIZATION — How AI reads text       
+╠══════════════════════════════════════════
+║                                          
+║  "I love french fries"                  
+║   → [I][love][french][fries] = 4 tokens 
+║                                          
+║  "Unbelievable!"                        
+║   → [Un][believ][able][!] = 4 tokens    
+║                                          
+║  Rule of thumb: 100 words ≈ 133 tokens  
+╚══════════════════════════════════════════
 ```
 
 <!-- end_slide -->
@@ -446,9 +449,12 @@ Shows:
 **Each word = a row of numbers. The AI processes ALL words at once.**
 
 ```
-"Write" → [0.4, 0.1, 0.8, ...]  ┐
-"test"  → [0.3, 0.7, 0.2, ...]  │ ← this IS a matrix
-"cases" → [0.1, 0.9, 0.5, ...]  ┘
+              dim1  dim2  dim3  ...  dim1536
+             (food)(size)(mood)     (abstract)
+"Write" →  [ 0.4,  0.1,  0.8, ...    0.2 ]  ┐
+"test"  →  [ 0.3,  0.7,  0.2, ...    0.5 ]  │ = input matrix
+"cases" →  [ 0.1,  0.9,  0.5, ...    0.3 ]  ┘
+  ↑ tokens (rows)     ↑ meaning dimensions (columns)
 ```
 
 <!-- pause -->
@@ -456,7 +462,7 @@ Shows:
 **To figure out distance between meanings (like y = mx + c, but for similarity):**
 
 ```
-    d = √( (a₁-b₁)² + (a₂-b₂)² + ... + (aₙ-bₙ)² )
+    d = √( (x₁-y₁)² + (x₂-y₂)² + ... + (xₙ-yₙ)² )
 ```
 
 Doing this for every word pair, across 1536 dimensions, across 96 layers
@@ -490,8 +496,8 @@ Doing this for every word pair, across 1536 dimensions, across 96 layers
 │  Feed  │─▶│ Model  │─▶│Compare │─▶│ Adjust │─┐
 │sentence│  │predicts│  │to real │  │weights │ │
 └────────┘  └────────┘  └────────┘  └────────┘ │
-     ▲                                          │
-     └──────── repeat TRILLIONS of times ◀──────┘
+     ▲                                         │
+     └──────── repeat TRILLIONS of times ◀─────┘
 ```
 
 <!-- pause -->
@@ -606,7 +612,7 @@ Format: table [ID, Scenario,
 │  📄 Current message                │
 │  📄 Previous messages in this chat │
 │  📄 Documents pasted in            │
-│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─  │
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─     │
 │  🗑️ Older stuff falls off          │
 └────────────────────────────────────┘
 ```

@@ -17,9 +17,11 @@ MODEL = "llama3.2:3b"
 
 def generate_one_token(prompt, temperature=0.7):
     """Ask ollama to generate a short completion (1-2 words)."""
+    # Frame as completion task so the model continues rather than restarts
+    framed_prompt = f"Complete this sentence with one word: \"{prompt}\"\nAnswer:"
     payload = json.dumps({
         "model": MODEL,
-        "prompt": prompt,
+        "prompt": framed_prompt,
         "stream": False,
         "options": {"num_predict": 3, "temperature": temperature},
     }).encode()
@@ -27,9 +29,9 @@ def generate_one_token(prompt, temperature=0.7):
     with urllib.request.urlopen(req, timeout=10) as resp:
         data = json.loads(resp.read())
     # Take just the first word of the response, strip punctuation
-    response = data.get("response", "").strip().lstrip(".,;:!?…\n ")
+    response = data.get("response", "").strip().lstrip(".,;:!?…\n \"'")
     first_word = response.split()[0] if response.split() else response
-    return first_word
+    return first_word.rstrip(".,;:!?")
 
 
 def sample_at_temperature(prompt, temperature, count=8):
@@ -66,6 +68,8 @@ def main():
 
     # Get prompt
     print(f"{'─' * 60}")
+    import sys
+    sys.stdout.flush()
     prompt = input(f"  {BOLD}Type a partial sentence (Enter for default):{RESET} ").strip()
     if not prompt:
         prompt = "Once upon a time there was a"
