@@ -1,93 +1,89 @@
 #!/usr/bin/env python3
-"""Demystifying AI — interactive cosine similarity with hand-crafted 'embeddings'.
-
-SIMULATION ONLY: embeddings are hardcoded, not produced by a real model.
-"""
-import difflib
-import time
-
+"""Demystifying AI — real cosine similarity using sentence-transformers."""
 import numpy as np
+import time
+import warnings
+import os
 
-C = "\033[96m"; G = "\033[92m"; Y = "\033[93m"; RED = "\033[91m"; D = "\033[2m"; B = "\033[1m"; R = "\033[0m"
+warnings.filterwarnings("ignore")
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-# Fake but intuitive 8-dim embeddings. Dimensions loosely mean:
-# [business, churn/loss, users, subscription, food, cooking, leisure, tech]
-EMB = {
-    "customer churn":                  [0.90, 0.90, 0.70, 0.60, 0.00, 0.00, 0.10, 0.10],
-    "users cancelling subscriptions":  [0.80, 0.80, 0.90, 0.95, 0.00, 0.00, 0.10, 0.10],
-    "subscription revenue growth":     [0.90, 0.10, 0.60, 0.90, 0.00, 0.00, 0.10, 0.20],
-    "how to reduce customer attrition":[0.85, 0.85, 0.70, 0.50, 0.00, 0.00, 0.10, 0.10],
-    "french fries recipe":             [0.00, 0.00, 0.10, 0.00, 0.95, 0.90, 0.40, 0.00],
-    "how to bake chocolate cake":      [0.00, 0.00, 0.10, 0.00, 0.90, 0.95, 0.40, 0.00],
-    "best restaurants in paris":       [0.20, 0.00, 0.20, 0.00, 0.85, 0.20, 0.70, 0.00],
-    "weekend hiking trip":             [0.00, 0.00, 0.20, 0.00, 0.10, 0.00, 0.95, 0.00],
-    "machine learning model training": [0.30, 0.00, 0.20, 0.00, 0.00, 0.00, 0.10, 0.95],
-    "database query optimization":     [0.30, 0.00, 0.20, 0.00, 0.00, 0.00, 0.05, 0.95],
-}
+from sentence_transformers import SentenceTransformer
 
+CYAN = "\033[96m"
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+DIM = "\033[2m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
-def cosine(a, b):
-    a, b = np.array(a), np.array(b)
-    return float(a @ b / (np.linalg.norm(a) * np.linalg.norm(b)))
-
-
-def word_overlap(q, s):
-    qw, sw = set(q.lower().split()), set(s.lower().split())
-    return len(qw & sw) / len(qw | sw) if qw | sw else 0.0
+CORPUS = [
+    "customer churn is increasing this quarter",
+    "users are cancelling their subscriptions",
+    "french fries recipe with garlic aioli",
+    "the login page has a bug on mobile",
+    "authentication fails on the sign-in screen",
+    "quarterly revenue report Q4 2025",
+    "how to make crispy potato wedges",
+    "employee onboarding process document",
+    "new hire orientation checklist",
+]
 
 
-def resolve(query):
-    """Map free-text input to a known vocabulary entry (the simulation)."""
-    keys = list(EMB)
-    fuzzy = difflib.get_close_matches(query.lower(), keys, n=1, cutoff=0.6)
-    if fuzzy:
-        return fuzzy[0], EMB[fuzzy[0]], f"matched known sentence {Y}\"{fuzzy[0]}\"{R}"
-    scored = sorted(keys, key=lambda k: word_overlap(query, k), reverse=True)
-    best = scored[0]
-    if word_overlap(query, best) > 0:
-        return best, EMB[best], f"{Y}not in the precomputed set{R} — using nearest by word overlap: {B}\"{best}\"{R}"
-    return None, None, None
+def cosine_similarity(vec_a, vec_b):
+    """Compute cosine similarity between two vectors."""
+    dot = np.dot(vec_a, vec_b)
+    norm = np.linalg.norm(vec_a) * np.linalg.norm(vec_b)
+    return dot / norm if norm > 0 else 0.0
+
+
+def display_results(query, corpus, similarities):
+    """Display ranked similarity results with bars."""
+    ranked = sorted(enumerate(similarities), key=lambda x: x[1], reverse=True)
+    print(f"\n  {BOLD}Results for:{RESET} \"{YELLOW}{query}{RESET}\"\n")
+    for idx, score in ranked:
+        bar_len = int(score * 25)
+        bar = "█" * bar_len
+        color = GREEN if score > 0.5 else RED if score < 0.3 else CYAN
+        print(f"    {color}{score:.3f}{RESET} {color}{bar}{RESET} {corpus[idx]}")
+    print()
 
 
 def main():
-    print("=" * 64)
-    print(f"  {C}{B}COSINE SIMILARITY: Measuring Meaning{R}")
-    print("=" * 64)
-    print(f"  {D}Note: This is a simulation for illustration (hardcoded vectors).{R}\n")
+    print(f"\n{'=' * 60}")
+    print(f"  {CYAN}{BOLD}COSINE SIMILARITY: Real Embeddings{RESET}")
+    print(f"{'=' * 60}")
+    print(f"  {DIM}Model: all-MiniLM-L6-v2 (384 dimensions){RESET}")
+    print(f"  {DIM}Loading model...{RESET}", end="", flush=True)
 
-    print(f"  {D}Known sentences in this demo:{R}")
-    for s in EMB:
-        print(f"    {D}• {s}{R}")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    print(f" done.\n")
 
-    raw = input(f"\n  {B}Type a sentence{R} {D}(Enter for 'customer churn'){R}: ").strip()
-    query = raw or "customer churn"
+    # Encode corpus
+    corpus_embeddings = model.encode(CORPUS)
 
-    name, qv, note = resolve(query)
-    if qv is None:
-        print(f"\n  {RED}Hmm — \"{query}\" shares no words with any known sentence.{R}")
-        print(f"  {D}Try one of the sentences listed above, or rephrase using similar words.{R}")
-        return
+    # Show corpus
+    print(f"  {BOLD}Corpus ({len(CORPUS)} sentences):{RESET}")
+    for sentence in CORPUS:
+        print(f"    • {sentence}")
 
-    print(f"\n  You typed: {Y}\"{query}\"{R}")
-    print(f"  {D}→ {note}{R}\n")
-    time.sleep(0.5)
+    # Get query
+    print(f"\n{'─' * 60}")
+    query = input(f"  {BOLD}Type a query (Enter for default):{RESET} ").strip()
+    if not query:
+        query = "users are leaving the platform"
 
-    print(f"  {B}{'sentence':<34}{'cosine':>9}{R}")
-    print(f"  {D}{'-' * 43}{R}")
-    ranked = sorted(EMB.items(), key=lambda kv: cosine(qv, kv[1]), reverse=True)
-    for text, vec in ranked:
-        if text == name:
-            continue
-        cs = cosine(qv, vec)
-        bar = "█" * int(cs * 20)
-        col = G if cs > 0.5 else RED
-        verdict = "similar" if cs > 0.5 else "unrelated"
-        print(f"  {text:<34}{col}{cs:>9.2f}{R}  {col}{bar}{R} {D}{verdict}{R}")
-        time.sleep(0.25)
+    # Encode and compare
+    query_embedding = model.encode([query])[0]
+    similarities = [cosine_similarity(query_embedding, emb) for emb in corpus_embeddings]
 
-    print("=" * 64)
-    print(f"  {G}High cosine{R} → same idea   {RED}Low cosine{R} → different topic")
-    print("=" * 64)
+    display_results(query, CORPUS, similarities)
+
+    # Show embedding snippet
+    print(f"  {DIM}Embedding for \"{query[:30]}...\":{RESET}")
+    print(f"  {DIM}[{query_embedding[0]:.4f}, {query_embedding[1]:.4f}, {query_embedding[2]:.4f}, ... ×384 dims]{RESET}")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

@@ -9,8 +9,8 @@ theme:
       right: "{current_slide} / {total_slides}"
 ---
 
-# Demystifying AI
-## What's Actually Happening When You Talk to an LLM
+# Unboxing the AI Black Box
+## A 10,000-Foot View of How LLMs Work
 
 ![image:w:60%](images/title-slide-ai.png)
 
@@ -438,20 +438,6 @@ Shows:
 <!-- pause -->
 
 **Specific, keyword-rich prompts → higher attention on what matters.**
-
-<!-- end_slide -->
-
-# 🧪 Live Demo: Attention Visualization
-
-```bash
-python scripts/attention_demo.py
-```
-
-<!-- pause -->
-
-Shows each word colored by attention weight:
-- 🟢 Green = high focus (SECURITY, LOGIN, test, QA)
-- ⬜ Dim = low focus (a, the, for, on)
 
 <!-- end_slide -->
 

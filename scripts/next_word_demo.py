@@ -1,98 +1,89 @@
 #!/usr/bin/env python3
-"""Demystifying AI — interactive next-word prediction & how temperature steers it.
-
-SIMULATION ONLY: probability distributions are hardcoded, not from a real model.
-"""
-import difflib
-import math
-import random
+"""Demystifying AI — real next-word prediction using Ollama (local LLM)."""
+import json
+import urllib.request
 import time
 
-C = "\033[96m"; G = "\033[92m"; Y = "\033[93m"; D = "\033[2m"; B = "\033[1m"; R = "\033[0m"
+CYAN = "\033[96m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+DIM = "\033[2m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
-# ~5 pre-built prompts → (next words, raw "logits").
-PROMPTS = {
-    "the capital of france is": (["Paris", "Lyon", "located", "famous", "Marseille", "home"],
-                                 [6.0, 2.5, 2.0, 1.5, 1.2, 1.0]),
-    "once upon a":              (["time", "midnight", "dream", "while", "star", "hill"],
-                                 [6.5, 2.0, 1.8, 2.2, 1.0, 0.8]),
-    "the weather today is":     (["sunny", "cloudy", "cold", "warm", "rainy", "nice"],
-                                 [4.0, 3.5, 3.0, 2.8, 2.5, 2.2]),
-    "i love to":                (["code", "travel", "eat", "read", "sing", "learn"],
-                                 [3.8, 3.5, 3.2, 3.0, 2.0, 2.6]),
-    "machine learning is":      (["powerful", "hard", "fun", "everywhere", "math", "magic"],
-                                 [4.2, 3.0, 2.8, 2.5, 2.2, 1.5]),
-}
-GENERIC = (["the", "a", "and", "to", "of", "that"], [3.0, 2.8, 2.6, 2.4, 2.2, 2.0])
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL = "llama3.2:3b"
 
 
-def softmax(logits, temperature):
-    if temperature <= 0:
-        top = logits.index(max(logits))
-        return [1.0 if i == top else 0.0 for i in range(len(logits))]
-    z = [x / temperature for x in logits]
-    m = max(z)
-    e = [math.exp(v - m) for v in z]
-    s = sum(e)
-    return [v / s for v in e]
+def generate_one_token(prompt, temperature=0.7):
+    """Ask ollama to generate a short completion (1-2 words)."""
+    payload = json.dumps({
+        "model": MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"num_predict": 3, "temperature": temperature},
+    }).encode()
+    req = urllib.request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        data = json.loads(resp.read())
+    # Take just the first word of the response, strip punctuation
+    response = data.get("response", "").strip().lstrip(".,;:!?…\n ")
+    first_word = response.split()[0] if response.split() else response
+    return first_word
 
 
-def weighted_choice(rng, words, probs):
-    r, acc = rng.random(), 0.0
-    for w, p in zip(words, probs):
-        acc += p
-        if r <= acc:
-            return w
-    return words[-1]
+def sample_at_temperature(prompt, temperature, count=8):
+    """Sample multiple completions to show distribution."""
+    results = []
+    for _ in range(count):
+        token = generate_one_token(prompt, temperature)
+        results.append(token)
+    return results
 
 
-def bar_chart(words, probs):
-    top = max(probs)
-    for w, p in sorted(zip(words, probs), key=lambda x: -x[1]):
-        blocks = "█" * int(round(p * 30))
-        col = G if p == top else C
-        print(f"    {w:<11}{col}{blocks}{R} {D}{p * 100:5.1f}%{R}")
-        time.sleep(0.12)
+def display_samples(prompt, temperature, samples):
+    """Display sampled tokens with frequency."""
+    from collections import Counter
+    freq = Counter(samples)
+    total = len(samples)
+    desc = "deterministic" if temperature < 0.1 else "balanced" if temperature < 0.9 else "creative"
+
+    print(f"\n{YELLOW}── temperature = {temperature}  ({desc}) ──{RESET}")
+    for token, count in freq.most_common():
+        pct = count / total * 100
+        bar_len = int(pct / 100 * 25)
+        bar = "█" * bar_len
+        color = GREEN if count == max(freq.values()) else CYAN
+        print(f"    {token:<12} {color}{bar}{RESET} {DIM}{pct:.0f}% ({count}/{total}){RESET}")
+    print(f"    {DIM}raw: {', '.join(samples)}{RESET}")
 
 
 def main():
-    print("=" * 60)
-    print(f"  {C}{B}NEXT-WORD PREDICTION: It's Just Probabilities{R}")
-    print("=" * 60)
-    print(f"  {D}Note: This is a simulation for illustration (hardcoded logits).{R}\n")
-    print(f"  {D}Known prompts:{R} " + f"{D}|{R} ".join(f'"{p}"' for p in PROMPTS))
+    print(f"\n{'=' * 60}")
+    print(f"  {CYAN}{BOLD}NEXT-WORD PREDICTION: Real LLM ({MODEL}){RESET}")
+    print(f"{'=' * 60}")
+    print(f"  {DIM}Using Ollama local model — actual inference{RESET}\n")
 
-    raw = input(f"\n  {B}Type a partial sentence{R} {D}(Enter for 'the capital of france is'){R}: ").strip()
-    prompt = (raw or "the capital of france is").lower().rstrip(" .")
+    # Get prompt
+    print(f"{'─' * 60}")
+    prompt = input(f"  {BOLD}Type a partial sentence (Enter for default):{RESET} ").strip()
+    if not prompt:
+        prompt = "Once upon a time there was a"
 
-    match = difflib.get_close_matches(prompt, list(PROMPTS), n=1, cutoff=0.6)
-    if match:
-        words, logits = PROMPTS[match[0]]
-        print(f"  {D}→ matched known prompt {Y}\"{match[0]}\"{R}")
-    else:
-        words, logits = GENERIC
-        print(f"  {D}→ {Y}not in the precomputed set{R} — using a generic distribution.{R}")
+    print(f"\n  Prompt: \"{BOLD}{prompt}{RESET} ___\"\n")
+    print(f"  {DIM}Sampling 8 completions at each temperature...{RESET}")
 
-    t_raw = input(f"  {B}Temperature{R} {D}(Enter for 0.7){R}: ").strip()
-    try:
-        temp = float(t_raw) if t_raw else 0.7
-    except ValueError:
-        print(f"  {D}(couldn't parse '{t_raw}', using 0.7){R}")
-        temp = 0.7
+    # Demo at 3 temperatures
+    for temp in [0.0, 0.7, 1.5]:
+        samples = sample_at_temperature(prompt, temp)
+        display_samples(prompt, temp, samples)
 
-    label = "greedy" if temp <= 0 else ("balanced" if temp < 1 else "creative")
-    print(f'\n  Prompt: "{B}{raw or "the capital of france is"}{R} ___"\n')
-    print(f"{Y}── temperature = {temp}  ({label}) ──{R}")
-    probs = softmax(logits, temp)
-    bar_chart(words, probs)
-    print(f"\n  {B}Sampling 5 times:{R}")
-    rng = random.Random(42)
-    picks = [weighted_choice(rng, words, probs) for _ in range(5)]
-    print(f"  {G}{', '.join(picks)}{R}")
-
-    print("=" * 60)
-    print(f"  {D}temp=0 → always the top token;  temp↑ → flatter, more variety.{R}")
-    print("=" * 60)
+    print(f"\n{'=' * 60}")
+    print(f"  {BOLD}Key insight:{RESET}")
+    print(f"    temp=0   → same answer every time")
+    print(f"    temp=0.7 → mostly consistent, some variety")
+    print(f"    temp=1.5 → surprising/creative picks")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":
