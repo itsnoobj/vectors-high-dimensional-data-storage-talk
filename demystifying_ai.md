@@ -85,7 +85,7 @@ Most of us use them like a **black box:**
 
 # Part 1: Unboxing the Magic
 
-![width:500px](images/gifs/flipping-papers.gif)
+![width:600px](images/gifs/flipping-papers.gif)
 
 <!-- end_slide -->
 
