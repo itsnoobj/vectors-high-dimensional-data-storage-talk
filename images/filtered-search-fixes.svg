@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" font-family="Inter, -apple-system, sans-serif">
+  <rect width="1600" height="700" fill="#2d2b3d"/>
+  <text x="800" y="45" text-anchor="middle" fill="#cdd6f4" font-size="22" font-weight="bold">Three Fixes for Filtered Search</text>
+  
+  <!-- Fix 1: Iterative Scan -->
+  <rect x="50" y="80" width="480" height="530" rx="12" fill="#313244" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="290" y="115" text-anchor="middle" fill="#a6e3a1" font-size="18" font-weight="bold">1. Iterative Scan</text>
+  <text x="290" y="145" text-anchor="middle" fill="#a6adc8" font-size="13">Keep scanning until enough match</text>
+  
+  <!-- Visual: expanding search -->
+  <circle cx="290" cy="250" r="40" fill="none" stroke="#a6e3a1" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="290" cy="250" r="70" fill="none" stroke="#a6e3a1" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="290" cy="250" r="100" fill="none" stroke="#a6e3a1" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="290" cy="250" r="130" fill="none" stroke="#a6e3a1" stroke-width="1"/>
+  <!-- dots -->
+  <circle cx="270" cy="220" r="6" fill="#f38ba8"/><circle cx="310" cy="235" r="6" fill="#a6e3a1"/>
+  <circle cx="250" cy="260" r="6" fill="#f38ba8"/><circle cx="330" cy="270" r="6" fill="#f38ba8"/>
+  <circle cx="220" cy="200" r="6" fill="#a6e3a1"/><circle cx="360" cy="210" r="6" fill="#f38ba8"/>
+  <circle cx="200" cy="290" r="6" fill="#a6e3a1"/><circle cx="380" cy="300" r="6" fill="#f38ba8"/>
+  <circle cx="350" cy="170" r="6" fill="#a6e3a1"/><circle cx="230" cy="330" r="6" fill="#f38ba8"/>
+  
+  <text x="290" y="420" text-anchor="middle" fill="#cdd6f4" font-size="13">Scan 40 → not enough → scan 40 more → done</text>
+  <text x="290" y="460" text-anchor="middle" fill="#a6e3a1" font-size="14" font-weight="bold">Works for any filter ✓</text>
+  <text x="290" y="490" text-anchor="middle" fill="#a6adc8" font-size="12">pgvector 0.8+ baseline</text>
+  <text x="290" y="520" text-anchor="middle" fill="#6c7086" font-size="12">Best for: high cardinality (10K+ values)</text>
+  
+  <!-- Fix 2: Partial Index -->
+  <rect x="560" y="80" width="480" height="530" rx="12" fill="#313244" stroke="#89b4fa" stroke-width="2"/>
+  <text x="800" y="115" text-anchor="middle" fill="#89b4fa" font-size="18" font-weight="bold">2. Partial Index</text>
+  <text x="800" y="145" text-anchor="middle" fill="#a6adc8" font-size="13">Separate graph per filter value</text>
+  
+  <!-- Visual: separate small circles -->
+  <circle cx="720" cy="230" r="50" fill="none" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="720" y="235" text-anchor="middle" fill="#89b4fa" font-size="10">science</text>
+  <circle cx="720" cy="230" r="5" fill="#a6e3a1"/>
+  <circle cx="735" cy="215" r="4" fill="#a6e3a1"/>
+  <circle cx="705" cy="245" r="4" fill="#a6e3a1"/>
+  
+  <circle cx="880" cy="230" r="50" fill="none" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="880" y="235" text-anchor="middle" fill="#89b4fa" font-size="10">sports</text>
+  <circle cx="880" cy="230" r="5" fill="#a6e3a1"/>
+  <circle cx="895" cy="215" r="4" fill="#a6e3a1"/>
+  <circle cx="865" cy="245" r="4" fill="#a6e3a1"/>
+  
+  <circle cx="800" cy="330" r="50" fill="none" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="800" y="335" text-anchor="middle" fill="#89b4fa" font-size="10">tech</text>
+  <circle cx="800" cy="330" r="5" fill="#a6e3a1"/>
+  <circle cx="815" cy="315" r="4" fill="#a6e3a1"/>
+  <circle cx="785" cy="345" r="4" fill="#a6e3a1"/>
+  
+  <text x="800" y="420" text-anchor="middle" fill="#cdd6f4" font-size="13">One HNSW graph per category</text>
+  <text x="800" y="460" text-anchor="middle" fill="#89b4fa" font-size="14" font-weight="bold">Zero wasted traversal ✓</text>
+  <text x="800" y="490" text-anchor="middle" fill="#a6adc8" font-size="12">CREATE INDEX ... WHERE category = 'X'</text>
+  <text x="800" y="520" text-anchor="middle" fill="#6c7086" font-size="12">Best for: low cardinality (2-100 values)</text>
+  
+  <!-- Fix 3: Partitioning -->
+  <rect x="1070" y="80" width="480" height="530" rx="12" fill="#313244" stroke="#f9e2af" stroke-width="2"/>
+  <text x="1310" y="115" text-anchor="middle" fill="#f9e2af" font-size="18" font-weight="bold">3. Table Partitioning</text>
+  <text x="1310" y="145" text-anchor="middle" fill="#a6adc8" font-size="13">One partition + index per tenant</text>
+  
+  <!-- Visual: stacked table slices -->
+  <rect x="1200" y="185" width="220" height="35" rx="4" fill="#f9e2af" opacity="0.2" stroke="#f9e2af" stroke-width="1"/>
+  <text x="1310" y="207" text-anchor="middle" fill="#f9e2af" font-size="11">Tenant A (+ own HNSW)</text>
+  
+  <rect x="1200" y="230" width="220" height="35" rx="4" fill="#f9e2af" opacity="0.2" stroke="#f9e2af" stroke-width="1"/>
+  <text x="1310" y="252" text-anchor="middle" fill="#f9e2af" font-size="11">Tenant B (+ own HNSW)</text>
+  
+  <rect x="1200" y="275" width="220" height="35" rx="4" fill="#f9e2af" opacity="0.2" stroke="#f9e2af" stroke-width="1"/>
+  <text x="1310" y="297" text-anchor="middle" fill="#f9e2af" font-size="11">Tenant C (+ own HNSW)</text>
+  
+  <rect x="1200" y="320" width="220" height="35" rx="4" fill="#f9e2af" opacity="0.1" stroke="#6c7086" stroke-width="1"/>
+  <text x="1310" y="342" text-anchor="middle" fill="#6c7086" font-size="11">...</text>
+  
+  <text x="1310" y="420" text-anchor="middle" fill="#cdd6f4" font-size="13">Storage-level isolation</text>
+  <text x="1310" y="460" text-anchor="middle" fill="#f9e2af" font-size="14" font-weight="bold">Scales to thousands ✓</text>
+  <text x="1310" y="490" text-anchor="middle" fill="#a6adc8" font-size="12">PARTITION BY LIST (tenant_id)</text>
+  <text x="1310" y="520" text-anchor="middle" fill="#6c7086" font-size="12">Best for: multi-tenant SaaS</text>
+
+  <!-- Bottom note -->
+  <text x="800" y="660" text-anchor="middle" fill="#a6adc8" font-size="13">All three work in pgvector. Iterative scan is the baseline. Add partial/partition for performance.</text>
+</svg>

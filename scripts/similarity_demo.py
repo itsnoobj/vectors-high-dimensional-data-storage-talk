@@ -28,6 +28,8 @@ CORPUS = [
     "how to make crispy potato wedges",
     "employee onboarding process document",
     "new hire orientation checklist",
+    "the bank is steep and covered in mud",
+    "the bank is closed for the holiday",
 ]
 
 

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" font-family="Inter, -apple-system, sans-serif">
+  <!-- Background -->
+  <rect width="1200" height="500" fill="#2d2b3d"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" fill="#cdd6f4" font-size="20" font-weight="bold">Three Levers Through the RAM Wall</text>
+  <text x="600" y="68" text-anchor="middle" fill="#8a8699" font-size="14">Full precision isn't needed to search. Only to rank the final 10.</text>
+  
+  <!-- Lever 1: Dimensions -->
+  <rect x="50" y="100" width="340" height="280" rx="10" fill="#313244" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="220" y="135" text-anchor="middle" fill="#a6e3a1" font-size="18" font-weight="bold">1. REDUCE DIMENSIONS</text>
+  <text x="220" y="165" text-anchor="middle" fill="#cdd6f4" font-size="14">Matryoshka (MRL)</text>
+  
+  <!-- Nesting doll visual -->
+  <rect x="100" y="185" width="240" height="30" rx="4" fill="#a6e3a1" opacity="0.3"/>
+  <text x="220" y="205" text-anchor="middle" fill="#a6e3a1" font-size="11">1536 dims (full)</text>
+  <rect x="130" y="225" width="180" height="25" rx="4" fill="#a6e3a1" opacity="0.5"/>
+  <text x="220" y="242" text-anchor="middle" fill="#a6e3a1" font-size="11">512 dims</text>
+  <rect x="160" y="258" width="120" height="22" rx="4" fill="#a6e3a1" opacity="0.7"/>
+  <text x="220" y="273" text-anchor="middle" fill="#1e1e2e" font-size="10">256 dims</text>
+  
+  <text x="220" y="310" text-anchor="middle" fill="#f9e2af" font-size="16" font-weight="bold">6x smaller</text>
+  <text x="220" y="335" text-anchor="middle" fill="#a6adc8" font-size="12">Free. One API parameter.</text>
+  <text x="220" y="360" text-anchor="middle" fill="#a6adc8" font-size="12">~97% recall</text>
+  
+  <!-- Lever 2: Bits -->
+  <rect x="430" y="100" width="340" height="280" rx="10" fill="#313244" stroke="#89b4fa" stroke-width="2"/>
+  <text x="600" y="135" text-anchor="middle" fill="#89b4fa" font-size="18" font-weight="bold">2. REDUCE BITS</text>
+  <text x="600" y="165" text-anchor="middle" fill="#cdd6f4" font-size="14">Quantization</text>
+  
+  <!-- Bit reduction visual -->
+  <rect x="480" y="185" width="240" height="22" rx="4" fill="#89b4fa" opacity="0.2"/>
+  <text x="600" y="200" text-anchor="middle" fill="#89b4fa" font-size="10">FP32: ████████████████ (4 bytes)</text>
+  <rect x="480" y="215" width="240" height="22" rx="4" fill="#89b4fa" opacity="0.35"/>
+  <text x="600" y="230" text-anchor="middle" fill="#89b4fa" font-size="10">FP16: ████████ (2 bytes)</text>
+  <rect x="480" y="245" width="240" height="22" rx="4" fill="#89b4fa" opacity="0.5"/>
+  <text x="600" y="260" text-anchor="middle" fill="#89b4fa" font-size="10">INT8: ████ (1 byte)</text>
+  <rect x="480" y="275" width="240" height="22" rx="4" fill="#89b4fa" opacity="0.7"/>
+  <text x="600" y="290" text-anchor="middle" fill="#1e1e2e" font-size="10">Binary: █ (1 bit)</text>
+  
+  <text x="600" y="325" text-anchor="middle" fill="#f9e2af" font-size="16" font-weight="bold">4-32x smaller</text>
+  <text x="600" y="350" text-anchor="middle" fill="#a6adc8" font-size="12">Needs re-rank step.</text>
+  <text x="600" y="375" text-anchor="middle" fill="#a6adc8" font-size="12">~92-99% recall</text>
+  
+  <!-- Lever 3: Disk -->
+  <rect x="810" y="100" width="340" height="280" rx="10" fill="#313244" stroke="#f9e2af" stroke-width="2"/>
+  <text x="980" y="135" text-anchor="middle" fill="#f9e2af" font-size="18" font-weight="bold">3. MOVE TO DISK</text>
+  <text x="980" y="165" text-anchor="middle" fill="#cdd6f4" font-size="14">DiskANN</text>
+  
+  <!-- Disk visual -->
+  <rect x="880" y="190" width="80" height="50" rx="4" fill="#f9e2af" opacity="0.3"/>
+  <text x="920" y="220" text-anchor="middle" fill="#f9e2af" font-size="10">RAM</text>
+  <text x="960" y="215" text-anchor="middle" fill="#6c7086" font-size="16">→</text>
+  <rect x="980" y="190" width="120" height="50" rx="4" fill="#f9e2af" opacity="0.5"/>
+  <text x="1040" y="220" text-anchor="middle" fill="#1e1e2e" font-size="10">NVMe SSD</text>
+  
+  <text x="980" y="270" text-anchor="middle" fill="#a6adc8" font-size="11">Graph on disk.</text>
+  <text x="980" y="290" text-anchor="middle" fill="#a6adc8" font-size="11">Only tiny index in RAM.</text>
+  
+  <text x="980" y="325" text-anchor="middle" fill="#f9e2af" font-size="16" font-weight="bold">30x less RAM</text>
+  <text x="980" y="350" text-anchor="middle" fill="#a6adc8" font-size="12">+5-10ms latency.</text>
+  <text x="980" y="375" text-anchor="middle" fill="#a6adc8" font-size="12">~95-99% recall</text>
+  
+  <!-- Bottom: compose -->
+  <rect x="200" y="410" width="800" height="60" rx="8" fill="#2a2a3c" stroke="#f9e2af" stroke-width="1.5"/>
+  <text x="600" y="435" text-anchor="middle" fill="#cdd6f4" font-size="14">Compose all three:</text>
+  <text x="600" y="458" text-anchor="middle" fill="#a6e3a1" font-size="16" font-weight="bold">1536d FP32: 920 GB  →  256d + BQ + DiskANN: &lt;5 GB</text>
+</svg>

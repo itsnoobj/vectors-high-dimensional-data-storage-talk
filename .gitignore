@@ -33,3 +33,8 @@ Thumbs.db
 # Logs
 *.log
 kiro-chat
+
+# Local reference material
+learning/
+vector_storage_at_scale_v2.md
+*.pdf

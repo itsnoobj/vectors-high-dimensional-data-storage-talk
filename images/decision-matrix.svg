@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 750" font-family="Inter, -apple-system, sans-serif">
+  <!-- Background -->
+  <rect width="1600" height="750" fill="#2d2b3d"/>
+  
+  <!-- Title -->
+  <text x="800" y="45" text-anchor="middle" fill="#cdd6f4" font-size="26" font-weight="bold">Decision Matrix: What to Do at Each Scale</text>
+  
+  <!-- Scale axis -->
+  <line x1="60" y1="85" x2="1540" y2="85" stroke="#6c7086" stroke-width="2" marker-end="url(#darr)"/>
+  <text x="800" y="77" text-anchor="middle" fill="#6c7086" font-size="14">SCALE →</text>
+  
+  <!-- Scale markers -->
+  <rect x="60" y="100" width="270" height="40" rx="6" fill="#a6e3a1" opacity="0.25"/>
+  <text x="195" y="126" text-anchor="middle" fill="#a6e3a1" font-size="16">&lt; 1M vectors</text>
+  
+  <rect x="350" y="100" width="280" height="40" rx="6" fill="#89b4fa" opacity="0.25"/>
+  <text x="490" y="126" text-anchor="middle" fill="#89b4fa" font-size="16">1M - 10M</text>
+  
+  <rect x="650" y="100" width="290" height="40" rx="6" fill="#f9e2af" opacity="0.25"/>
+  <text x="795" y="126" text-anchor="middle" fill="#f9e2af" font-size="16">10M - 50M</text>
+  
+  <rect x="960" y="100" width="280" height="40" rx="6" fill="#f38ba8" opacity="0.25"/>
+  <text x="1100" y="126" text-anchor="middle" fill="#f38ba8" font-size="16">50M - 1B</text>
+  
+  <rect x="1260" y="100" width="280" height="40" rx="6" fill="#f38ba8" opacity="0.4"/>
+  <text x="1400" y="126" text-anchor="middle" fill="#f38ba8" font-size="15">Sub-5ms @100M+</text>
+  
+  <!-- Action boxes -->
+  <rect x="60" y="160" width="270" height="155" rx="12" fill="#313244" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="195" y="195" text-anchor="middle" fill="#a6e3a1" font-size="18" font-weight="bold">pgvector + HNSW</text>
+  <text x="195" y="230" text-anchor="middle" fill="#cdd6f4" font-size="15">Done.</text>
+  <text x="195" y="260" text-anchor="middle" fill="#a6adc8" font-size="14">Don't optimize yet.</text>
+  <text x="195" y="290" text-anchor="middle" fill="#a6adc8" font-size="14">Just ship.</text>
+  
+  <rect x="350" y="160" width="280" height="155" rx="12" fill="#313244" stroke="#89b4fa" stroke-width="2"/>
+  <text x="490" y="195" text-anchor="middle" fill="#89b4fa" font-size="18" font-weight="bold">MRL (256d)</text>
+  <text x="490" y="230" text-anchor="middle" fill="#cdd6f4" font-size="15">6x free savings</text>
+  <text x="490" y="260" text-anchor="middle" fill="#a6adc8" font-size="14">+ iterative_scan</text>
+  <text x="490" y="290" text-anchor="middle" fill="#a6adc8" font-size="14">for filtered queries</text>
+  
+  <rect x="650" y="160" width="290" height="155" rx="12" fill="#313244" stroke="#f9e2af" stroke-width="2"/>
+  <text x="795" y="195" text-anchor="middle" fill="#f9e2af" font-size="18" font-weight="bold">MRL + Quantization</text>
+  <text x="795" y="230" text-anchor="middle" fill="#cdd6f4" font-size="15">halfvec (12x)</text>
+  <text x="795" y="258" text-anchor="middle" fill="#cdd6f4" font-size="15">or BQ (192x)</text>
+  <text x="795" y="290" text-anchor="middle" fill="#a6adc8" font-size="14">+ BM25 hybrid search</text>
+  
+  <rect x="960" y="160" width="280" height="155" rx="12" fill="#313244" stroke="#f38ba8" stroke-width="2"/>
+  <text x="1100" y="195" text-anchor="middle" fill="#f38ba8" font-size="18" font-weight="bold">DiskANN</text>
+  <text x="1100" y="230" text-anchor="middle" fill="#cdd6f4" font-size="15">pgvectorscale</text>
+  <text x="1100" y="260" text-anchor="middle" fill="#a6adc8" font-size="14">Still Postgres.</text>
+  <text x="1100" y="290" text-anchor="middle" fill="#a6adc8" font-size="14">Still open source.</text>
+  
+  <rect x="1260" y="160" width="280" height="155" rx="12" fill="#313244" stroke="#f38ba8" stroke-width="2.5"/>
+  <text x="1400" y="195" text-anchor="middle" fill="#f38ba8" font-size="18" font-weight="bold">Qdrant</text>
+  <text x="1400" y="235" text-anchor="middle" fill="#cdd6f4" font-size="14">Only case for</text>
+  <text x="1400" y="260" text-anchor="middle" fill="#cdd6f4" font-size="14">dedicated vector DB</text>
+  
+  <!-- Divider -->
+  <line x1="60" y1="345" x2="1540" y2="345" stroke="#3a3750" stroke-width="1.5"/>
+  
+  <!-- Cross-cutting -->
+  <text x="80" y="385" fill="#cdd6f4" font-size="18" font-weight="bold">Cross-cutting concerns (at any scale):</text>
+  
+  <rect x="60" y="405" width="350" height="100" rx="10" fill="#2a2a3c" stroke="#89b4fa" stroke-width="1.5"/>
+  <text x="235" y="440" text-anchor="middle" fill="#89b4fa" font-size="16" font-weight="bold">Multi-tenant SaaS</text>
+  <text x="235" y="470" text-anchor="middle" fill="#a6adc8" font-size="13">Partition by tenant</text>
+  <text x="235" y="492" text-anchor="middle" fill="#a6adc8" font-size="13">Index per partition</text>
+  
+  <rect x="440" y="405" width="350" height="100" rx="10" fill="#2a2a3c" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="615" y="440" text-anchor="middle" fill="#a6e3a1" font-size="16" font-weight="bold">Keyword + Semantic</text>
+  <text x="615" y="470" text-anchor="middle" fill="#a6adc8" font-size="13">ParadeDB extension + RRF</text>
+  <text x="615" y="492" text-anchor="middle" fill="#a6adc8" font-size="13">Same DB, no sync</text>
+  
+  <rect x="820" y="405" width="350" height="100" rx="10" fill="#2a2a3c" stroke="#f9e2af" stroke-width="1.5"/>
+  <text x="995" y="440" text-anchor="middle" fill="#f9e2af" font-size="16" font-weight="bold">Quality Degrading</text>
+  <text x="995" y="470" text-anchor="middle" fill="#a6adc8" font-size="13">Golden eval set (200 pairs)</text>
+  <text x="995" y="492" text-anchor="middle" fill="#a6adc8" font-size="13">Measure recall weekly</text>
+  
+  <rect x="1200" y="405" width="340" height="100" rx="10" fill="#2a2a3c" stroke="#f38ba8" stroke-width="1.5"/>
+  <text x="1370" y="440" text-anchor="middle" fill="#f38ba8" font-size="16" font-weight="bold">Agentic RAG (3-5x QPS)</text>
+  <text x="1370" y="470" text-anchor="middle" fill="#a6adc8" font-size="13">Orchestrate above DB</text>
+  <text x="1370" y="492" text-anchor="middle" fill="#a6adc8" font-size="13">DB is fast enough</text>
+  
+  <!-- Bottom takeaway -->
+  <rect x="250" y="545" width="1100" height="80" rx="12" fill="#2a2a3c" stroke="#a6e3a1" stroke-width="2.5"/>
+  <text x="800" y="580" text-anchor="middle" fill="#a6e3a1" font-size="22" font-weight="bold">Start with Postgres. Stay longer than you think.</text>
+  <text x="800" y="610" text-anchor="middle" fill="#a6adc8" font-size="15">Exhaust: dimensions → quantization → DiskANN → hybrid before adding infrastructure.</text>
+  
+  <!-- Footnote -->
+  <text x="800" y="680" text-anchor="middle" fill="#6c7086" font-size="13">All tools open source. Full 30-section decision checklist available as handout.</text>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="darr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="none" stroke="#6c7086" stroke-width="1.5"/>
+    </marker>
+  </defs>
+</svg>

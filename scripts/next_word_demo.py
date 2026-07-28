@@ -72,7 +72,7 @@ def main():
     sys.stdout.flush()
     prompt = input(f"  {BOLD}Type a partial sentence (Enter for default):{RESET} ").strip()
     if not prompt:
-        prompt = "Once upon a time there was a"
+        prompt = "If I could have any superpower it would be"
 
     print(f"\n  Prompt: \"{BOLD}{prompt}{RESET} ___\"\n")
     print(f"  {DIM}Sampling 8 completions at each temperature...{RESET}")
