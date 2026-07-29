@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" font-family="Inter, -apple-system, sans-serif">
+  <rect width="1600" height="900" fill="#1a1a2e"/>
+  
+  <!-- Title -->
+  <text x="800" y="55" text-anchor="middle" fill="#cdd6f4" font-size="26" font-weight="bold">Matryoshka Embeddings: Reduce Dimensions First</text>
+  <text x="800" y="85" text-anchor="middle" fill="#a6adc8" font-size="14">One model. Front dimensions carry the most meaning. Truncate safely.</text>
+  
+  <!-- 5 Matryoshka dolls - proper doll shape (rounded body + round head) decreasing in size -->
+  
+  <!-- Doll 1: 1024d (largest) -->
+  <ellipse cx="220" cy="480" rx="100" ry="160" fill="#6c7086" opacity="0.3" stroke="#6c7086" stroke-width="2"/>
+  <circle cx="220" cy="290" r="60" fill="#6c7086" opacity="0.3" stroke="#6c7086" stroke-width="2"/>
+  <!-- Face hint -->
+  <circle cx="210" cy="280" r="5" fill="#2d2b3d"/>
+  <circle cx="230" cy="280" r="5" fill="#2d2b3d"/>
+  <ellipse cx="220" cy="300" rx="10" ry="5" fill="none" stroke="#2d2b3d" stroke-width="2"/>
+  <text x="220" y="690" text-anchor="middle" fill="#a6adc8" font-size="18" font-weight="bold">1024d</text>
+  <text x="220" y="715" text-anchor="middle" fill="#a6adc8" font-size="13">41 GB / 10M</text>
+  
+  <!-- Doll 2: 512d -->
+  <ellipse cx="460" cy="500" rx="80" ry="130" fill="#89b4fa" opacity="0.3" stroke="#89b4fa" stroke-width="2"/>
+  <circle cx="460" cy="345" r="48" fill="#89b4fa" opacity="0.3" stroke="#89b4fa" stroke-width="2"/>
+  <circle cx="450" cy="337" r="4" fill="#2d2b3d"/>
+  <circle cx="470" cy="337" r="4" fill="#2d2b3d"/>
+  <ellipse cx="460" cy="355" rx="8" ry="4" fill="none" stroke="#2d2b3d" stroke-width="2"/>
+  <text x="460" y="690" text-anchor="middle" fill="#89b4fa" font-size="18" font-weight="bold">512d</text>
+  <text x="460" y="715" text-anchor="middle" fill="#89b4fa" font-size="13">20 GB</text>
+  
+  <!-- Doll 3: 256d (highlighted - sweet spot) -->
+  <ellipse cx="680" cy="520" rx="65" ry="105" fill="#a6e3a1" opacity="0.25" stroke="#a6e3a1" stroke-width="3"/>
+  <circle cx="680" cy="392" r="40" fill="#a6e3a1" opacity="0.25" stroke="#a6e3a1" stroke-width="3"/>
+  <circle cx="670" cy="385" r="4" fill="#2d2b3d"/>
+  <circle cx="690" cy="385" r="4" fill="#2d2b3d"/>
+  <ellipse cx="680" cy="400" rx="7" ry="3" fill="none" stroke="#2d2b3d" stroke-width="2"/>
+  <text x="680" y="690" text-anchor="middle" fill="#a6e3a1" font-size="20" font-weight="bold">256d</text>
+  <text x="680" y="715" text-anchor="middle" fill="#a6e3a1" font-size="14">10 GB</text>
+  <text x="680" y="740" text-anchor="middle" fill="#f9e2af" font-size="12">sweet spot</text>
+  
+  <!-- Doll 4: 128d -->
+  <ellipse cx="870" cy="540" rx="48" ry="78" fill="#f9e2af" opacity="0.3" stroke="#f9e2af" stroke-width="2"/>
+  <circle cx="870" cy="442" r="30" fill="#f9e2af" opacity="0.3" stroke="#f9e2af" stroke-width="2"/>
+  <circle cx="863" cy="437" r="3" fill="#2d2b3d"/>
+  <circle cx="877" cy="437" r="3" fill="#2d2b3d"/>
+  <text x="870" y="690" text-anchor="middle" fill="#f9e2af" font-size="16" font-weight="bold">128d</text>
+  <text x="870" y="715" text-anchor="middle" fill="#f9e2af" font-size="13">5 GB</text>
+  
+  <!-- Doll 5: 64d (smallest) -->
+  <ellipse cx="1020" cy="555" rx="35" ry="55" fill="#f38ba8" opacity="0.3" stroke="#f38ba8" stroke-width="2"/>
+  <circle cx="1020" cy="485" r="22" fill="#f38ba8" opacity="0.3" stroke="#f38ba8" stroke-width="2"/>
+  <circle cx="1015" cy="482" r="2.5" fill="#2d2b3d"/>
+  <circle cx="1025" cy="482" r="2.5" fill="#2d2b3d"/>
+  <text x="1020" y="690" text-anchor="middle" fill="#f38ba8" font-size="16" font-weight="bold">64d</text>
+  <text x="1020" y="715" text-anchor="middle" fill="#f38ba8" font-size="13">2.5 GB</text>
+  
+  <!-- Arrow showing truncation -->
+  <line x1="180" y1="200" x2="1050" y2="200" stroke="#a6adc8" stroke-width="2" marker-end="url(#arw4)"/>
+  <text x="600" y="185" text-anchor="middle" fill="#a6adc8" font-size="13">truncate → less detail, same core meaning</text>
+  
+  <!-- Right panel: How to use -->
+  <rect x="1130" y="220" width="400" height="260" rx="12" fill="#313244" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="1330" y="260" text-anchor="middle" fill="#a6e3a1" font-size="18" font-weight="bold">How to use:</text>
+  <text x="1330" y="310" text-anchor="middle" fill="#cdd6f4" font-size="14" font-family="monospace">embed("query", dimensions=256)</text>
+  <text x="1330" y="350" text-anchor="middle" fill="#a6adc8" font-size="14">One parameter change.</text>
+  <text x="1330" y="390" text-anchor="middle" fill="#f9e2af" font-size="18" font-weight="bold">6x smaller. Free.</text>
+  <text x="1330" y="430" text-anchor="middle" fill="#a6adc8" font-size="13">~97% recall at 256d</text>
+  <text x="1330" y="460" text-anchor="middle" fill="#a6adc8" font-size="12">OpenAI, Cohere, Voyage, Jina, Nomic</text>
+  
+  <!-- Right panel: What each captures -->
+  <rect x="1130" y="510" width="400" height="180" rx="12" fill="#313244" stroke="#6c7086" stroke-width="1"/>
+  <text x="1330" y="545" text-anchor="middle" fill="#cdd6f4" font-size="14" font-weight="bold">What each level captures:</text>
+  <text x="1330" y="585" text-anchor="middle" fill="#f38ba8" font-size="13">64d: "this is about refunds"</text>
+  <text x="1330" y="620" text-anchor="middle" fill="#a6e3a1" font-size="13">256d: "enterprise, 30-day policy"</text>
+  <text x="1330" y="655" text-anchor="middle" fill="#a6adc8" font-size="13">1024d: "customer X, date Y, edge case"</text>
+  
+  <!-- Bottom punchline -->
+  <rect x="300" y="790" width="1000" height="60" rx="8" fill="#2a2a3c" stroke="#a6e3a1" stroke-width="1.5"/>
+  <text x="800" y="825" text-anchor="middle" fill="#a6e3a1" font-size="16" font-weight="bold">This is the first lever. Free. No infrastructure change. Do it first.</text>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arw4" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="none" stroke="#a6adc8" stroke-width="1.5"/>
+    </marker>
+  </defs>
+</svg>

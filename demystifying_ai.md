@@ -235,15 +235,61 @@ python scripts/similarity_demo.py
 
 ```
 ╔═════════════════════════════════════════════════════
-║ 🔍 COSINE SIMILARITY — meaning, not length
+║ 🔍 COSINE SIMILARITY — meaning, not words
 ╠═════════════════════════════════════════════════════
 ║
-║ 👥 "customer churn" vs "users cancelling" → 0.91
-║ 🍟 "customer churn" vs "fries recipe"     → 0.12
+║ "customer churn" vs "users cancelling"   → 0.91
+║  Different words, same meaning ✅
 ║
-║ ✅ High score = same meaning
-║ ❌ Low score  = different topic
+║ "The bank is steep" vs "The bank is closed"
+║  Same words, different meaning           → 0.45 ⚠️
 ╚═════════════════════════════════════════════════════
+```
+
+<!-- end_slide -->
+
+# Tokenization — How AI Reads Text
+
+**LLMs don't read words. They read tokens — chunks of text.**
+
+<!-- pause -->
+
+| What it seems like | What actually happens |
+|---|---|
+| "Summarize this 10-page doc" | ~4,000 tokens of input |
+| "Context window: 128K tokens" | ≈ 96,000 words ≈ 300-page book |
+| "Why did it cut off mid-sentence?" | Hit the max output token limit |
+| "Why does it cost more for long prompts?" | Billed per token (input AND output) |
+
+<!-- pause -->
+
+**Rule of thumb:** 1 token ≈ ¾ of a word.
+
+This is why AI has a memory limit — measured in tokens, not words.
+
+<!-- end_slide -->
+
+# 🧪 Live Demo: Tokenization
+
+```bash
+python scripts/tokenization_demo.py
+```
+
+<!-- pause -->
+
+```
+╔══════════════════════════════════════════
+║  TOKENIZATION — How AI reads text       
+╠══════════════════════════════════════════
+║                                          
+║  "I love french fries"                  
+║   → [I][love][french][fries] = 4 tokens 
+║                                          
+║  "Unbelievable!"                        
+║   → [Un][believ][able][!] = 4 tokens    
+║                                          
+║  Rule of thumb: 100 words ≈ 133 tokens  
+╚══════════════════════════════════════════
 ```
 
 <!-- end_slide -->
@@ -303,52 +349,6 @@ Same word → *different* numbers depending on surroundings:
 ```
 
 **This is why AI handles ambiguity well** — context refines the numbers.
-
-<!-- end_slide -->
-
-# Tokenization — How AI Reads Text
-
-**LLMs don't read words. They read tokens — chunks of text.**
-
-<!-- pause -->
-
-| What it seems like | What actually happens |
-|---|---|
-| "Summarize this 10-page doc" | ~4,000 tokens of input |
-| "Context window: 128K tokens" | ≈ 96,000 words ≈ 300-page book |
-| "Why did it cut off mid-sentence?" | Hit the max output token limit |
-| "Why does it cost more for long prompts?" | Billed per token (input AND output) |
-
-<!-- pause -->
-
-**Rule of thumb:** 1 token ≈ ¾ of a word.
-
-This is why AI has a memory limit — measured in tokens, not words.
-
-<!-- end_slide -->
-
-# 🧪 Live Demo: Tokenization
-
-```bash
-python scripts/tokenization_demo.py
-```
-
-<!-- pause -->
-
-```
-╔══════════════════════════════════════════
-║  TOKENIZATION — How AI reads text       
-╠══════════════════════════════════════════
-║                                          
-║  "I love french fries"                  
-║   → [I][love][french][fries] = 4 tokens 
-║                                          
-║  "Unbelievable!"                        
-║   → [Un][believ][able][!] = 4 tokens    
-║                                          
-║  Rule of thumb: 100 words ≈ 133 tokens  
-╚══════════════════════════════════════════
-```
 
 <!-- end_slide -->
 
@@ -441,6 +441,22 @@ Shows:
 <!-- pause -->
 
 **Specific, keyword-rich prompts → higher attention on what matters.**
+
+<!-- end_slide -->
+
+# 🧪 Live Demo: Embeddings
+
+![image:w:70%](images/embeddings-concept.png)
+
+```bash
+python scripts/embedding_live_demo.py
+```
+
+<!-- pause -->
+
+Each sentence → 384 numbers. Similar meaning → similar numbers.
+
+Now imagine doing this for **500 words × 96 layers**...
 
 <!-- end_slide -->
 
@@ -710,11 +726,47 @@ Better job description → better assistant.
 | Exact-match assertions | "Good enough" evaluation |
 | Code change = behavior change | Model update = silent shift |
 
+<!-- end_slide -->
+
+# The Compounding Problem — Agentic Flows
+
+```
+  Customer service agent handles a refund request:
+
+  ┌──────────┐     ┌──────────┐     ┌──────────┐
+  │ Classify │ 90% │ Check    │ 90% │ Draft    │ 90%
+  │ intent   │────▶│ policy   │────▶│ response │────▶ Send?
+  └──────────┘     └──────────┘     └──────────┘
+                                          ↑
+  Combined: 0.9 × 0.9 × 0.9 = 72%    human review
+```
+
 <!-- pause -->
 
-- 🔄 Regression without code changes — keep golden test sets
-- ⚖️ Bias — test diverse inputs
-- 🎭 Confidence ≠ correctness — verify with known answers
+![image:w:80%](images/agent-equals-model-plus-harness.png)
+
+<!-- end_slide -->
+
+# Why AI Needs Evals, Not Just Tests
+
+**Traditional software:** deterministic → unit tests work.
+**AI systems:** stochastic → same input, different output every time.
+
+<!-- pause -->
+
+```
+Traditional test:       assert response == "Paris"        ✅ or ❌
+
+Eval for AI:            is_factual(response)?             score: 0.92
+                        is_relevant(response, query)?     score: 0.87
+                        is_hallucination_free(response)?  score: 0.95
+```
+
+<!-- pause -->
+
+- **Evals** = scoring system for AI quality (not pass/fail, but how good)
+- Run on every model change, every prompt tweak, every pipeline update
+- Without evals: flying blind. With evals: measurable quality.
 
 <!-- end_slide -->
 
