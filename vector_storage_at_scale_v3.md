@@ -17,6 +17,28 @@ options:
 
 ![](images/scaling-path.png)
 
+<!-- pause -->
+
+<!-- column_layout: [1, 1, 1, 1] -->
+
+<!-- column: 0 -->
+
+![](images/gifs/ship-it.gif)
+
+<!-- column: 1 -->
+
+![](images/gifs/sweating.gif)
+
+<!-- column: 2 -->
+
+![](images/gifs/money-burning.gif)
+
+<!-- column: 3 -->
+
+![](images/gifs/everything-fine-fire.gif)
+
+<!-- reset_layout -->
+
 <!-- end_slide -->
 
 # Why This Talk, Why Now
