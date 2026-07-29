@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" font-family="Inter, -apple-system, sans-serif">
-  <rect width="1600" height="700" fill="#2d2b3d"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 500" font-family="Inter, -apple-system, sans-serif">
+  <rect width="1600" height="500" fill="#2d2b3d"/>
   
   <!-- Title -->
   <text x="800" y="50" text-anchor="middle" fill="#cdd6f4" font-size="24" font-weight="bold">The Scaling Path</text>
@@ -50,6 +50,4 @@
   <text x="1280" y="410" text-anchor="middle" fill="#f38ba8" font-size="24" font-weight="bold">SILENT FAILURES</text>
   
   <!-- Bottom -->
-  <text x="800" y="560" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold">Each technique earns its complexity.</text>
-  <text x="800" y="590" text-anchor="middle" fill="#a6adc8" font-size="14">You'll understand WHY it's needed before we show HOW.</text>
 </svg>

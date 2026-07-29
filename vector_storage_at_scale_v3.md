@@ -17,8 +17,6 @@ options:
 
 ![](images/scaling-path.png)
 
-<!-- pause -->
-
 <!-- column_layout: [1, 1, 1, 1] -->
 
 <!-- column: 0 -->
