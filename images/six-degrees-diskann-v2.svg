@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" font-family="Inter, -apple-system, sans-serif">
-  <rect width="1600" height="900" fill="#2d2b3d"/>
+  <rect width="1600" height="900" fill="#1a1a2e"/>
   
   <!-- Title -->
   <text x="800" y="60" text-anchor="middle" fill="#cdd6f4" font-size="28" font-weight="bold">Six Degrees of Separation</text>
@@ -41,7 +41,7 @@
   <!-- Circle 6 - Target -->
   <circle cx="1000" cy="400" r="55" fill="#94e2d5"/>
   <text x="1000" y="395" text-anchor="middle" fill="#1e1e2e" font-size="28" font-weight="bold">6</text>
-  <text x="1000" y="420" text-anchor="middle" fill="#1e1e2e" font-size="10">TARGET</text>
+  <text x="1000" y="420" text-anchor="middle" fill="#1e1e2e" font-size="12">TARGET</text>
   
   <!-- Arrow below chain -->
   <line x1="150" y1="480" x2="1000" y2="480" stroke="#f9e2af" stroke-width="2" marker-end="url(#arw3)"/>

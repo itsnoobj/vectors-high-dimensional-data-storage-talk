@@ -227,7 +227,7 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 
 # The Cost of Getting It Wrong
 
-![](images/gifs/squid-game-eliminated.gif)
+![](images/gifs/interstellar.gif)
 
 **Three real patterns we see teams fall into:**
 
@@ -309,7 +309,25 @@ python scripts/quantization_demo.py
 
 # Lever 3: DiskANN
 
-![](images/six-degrees-diskann-v2.png)
+<!-- column_layout: [1, 3] -->
+
+<!-- column: 0 -->
+
+![](images/earth-drawing.jpg)
+
+**8 billion people on Earth.**
+
+**Any two connected by just 6 hops.**
+
+<!-- column: 1 -->
+
+![](images/degrees-of-separation.png)
+
+<!-- reset_layout -->
+
+<!-- pause -->
+
+<span style="color: #a6e3a1">**DiskANN uses the same idea: build a graph where any vector is ~6 hops from any other. Keep the graph in RAM, keep the actual vectors on SSD.**</span>
 
 <!-- end_slide -->
 
@@ -347,31 +365,21 @@ ORDER BY embedding <=> query LIMIT 10;
 
 <!-- pause -->
 
-<!-- column_layout: [1, 1] -->
+**⚠️ HNSW returns the 10 nearest vectors. Filter throws 9 away.**
+
+<!-- pause -->
+
+<!-- column_layout: [2, 1] -->
 
 <!-- column: 0 -->
 
-**⚠️ The vector index only knows distance.**
+Asked for 10. Got 0.
 
-It's blind to `tenant_id`. Blind to `category`.
-
-HNSW returns the 10 nearest vectors.
-Then the filter throws 9 of them away.
+<span style="color: #f38ba8">**No error. No warning. No log line.**</span>
 
 <!-- column: 1 -->
 
-![](images/gifs/squid-game-red-light.gif)
-
-**Result:**
-
-Asked for 10 results.
-Got 1. Or got 0.
-
-<span style="color: #f38ba8">No error.
-No warning.
-No log line.</span>
-
-Just an empty page for the user.
+![](images/gifs/where.gif)
 
 <!-- reset_layout -->
 
@@ -402,23 +410,26 @@ Just an empty page for the user.
 
 <span style="color: #f38ba8">**This is an active research area.**</span>
 
+![](images/gifs/math-lady.gif)
+
 <!-- end_slide -->
 
 # Silent Failure #2: Recall Drift
 
 **#1 returns zero results. #2 returns the WRONG results.**
 
-```
-Month 1:  recall@10 = 96%  ✅
-Month 6:  recall@10 = 84%  📉
-Month 9:  "Search is bad" — leadership
-```
+<!-- pause -->
+
+| | Month 1 | Month 4 | Month 6 | Month 9 |
+|---|---|---|---|---|
+| **Recall** | <span style="color: #a6e3a1">96% ✅</span> | <span style="color: #a6e3a1">93% ✅</span> | <span style="color: #f9e2af">84% 📉</span> | <span style="color: #f38ba8">??? 💀</span> |
+| **Vibe** | <span style="color: #a6e3a1">"Works great"</span> | <span style="color: #a6e3a1">"Still fine"</span> | <span style="color: #f9e2af">"Hmm..."</span> | <span style="color: #f38ba8">"Search is bad"</span> |
 
 <!-- pause -->
 
 No error. No alert. No log line.
 
-<span style="color: #f38ba8">The system doesn't crash. It just quietly becomes useless.</span>
+<span style="color: #f38ba8">**The system doesn't crash. It just quietly becomes useless.**</span>
 
 <!-- end_slide -->
 
@@ -456,14 +467,13 @@ No error. No alert. No log line.
 
 **Vector search misses exact terms. Keyword search misses meaning.**
 
-```
-Query: "how to handle payment refund timeout"
+**Query:** "how to handle payment refund timeout"
 
-BM25 (keyword):  Finds exact "refund timeout"       → precise
-Vector (semantic): Finds "payment reversal logic"    → broader
+<span style="color: #89b4fa">**BM25 (keyword):**</span> Finds exact "refund timeout" → precise
 
-Combined: Better recall than either alone.
-```
+<span style="color: #a6e3a1">**Vector (semantic):**</span> Finds "payment reversal logic" → broader
+
+<span style="color: #f9e2af">**Combined:**</span> Better recall than either alone.
 
 <!-- pause -->
 
@@ -524,7 +534,9 @@ No separate service. No sync. Same transaction.
 
 <span style="color: #f9e2af">**One rule: measure recall under real filters before buying another database.**</span>
 
-📬 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span> · 🌐 <span style="color: #89b4fa">noobj.me</span>
+📬 <span style="color: #89b4fa">hello@noobj.me</span>
+
+🌐 <span style="color: #89b4fa">noobj.me</span>
 
 ![](images/qr-repo.png)
 
@@ -536,147 +548,6 @@ No separate service. No sync. Same transaction.
 
 <!-- end_slide -->
 
-# Appendix: Matryoshka — How to Implement
-
-```sql
--- Store truncated prefix (normalize AFTER truncation)
-ALTER TABLE docs ADD COLUMN embedding_256 vector(256);
-UPDATE docs SET embedding_256 =
-  l2_normalize((embedding::real[])[1:256]::vector(256));
-CREATE INDEX ON docs USING hnsw (embedding_256 vector_cosine_ops);
-
--- Cascade: coarse search → fine re-rank
-WITH candidates AS (
-  SELECT id, embedding FROM docs
-  ORDER BY embedding_256 <=> $query_256 LIMIT 200
-)
-SELECT id, content FROM candidates
-ORDER BY embedding <=> $query_full LIMIT 10;
-```
-
-**Choosing prefix size:** Sweep {64, 128, 256, 512} on labeled eval set.
-Pick smallest holding 95%+ coarse recall@200.
-
-<!-- end_slide -->
-
-# Appendix: How Re-ranking Works
-
-![](images/reranking-analogy.png)
-
-<!-- end_slide -->
-
-# Appendix: Re-ranking in Action
-
-**A real query flowing through the cascade:**
-
-```
-Query: "How does photosynthesis work in deep ocean vents?"
-
-Stage 1 — BM25 keyword search (milliseconds):
-  → 1000 docs matching "photosynthesis", "ocean", "vents"
-  → includes junk: "ocean pollution", "air vents in buildings"
-
-Stage 2 — Vector ANN with compressed index (milliseconds):
-  → narrows to 100 by semantic similarity
-  → still includes docs about regular plant photosynthesis
-
-Stage 3 — Cross-encoder re-ranker (tens of milliseconds):
-  → reads query + each doc together through a transformer
-  → understands "deep ocean" + "vents" = hydrothermal context
-  → ranks "chemosynthesis at hydrothermal vents" highest
-
-Return top 10.
-```
-
-<!-- pause -->
-
-**Bi-encoder** encodes query and doc *separately* — can't see the relationship.
-**Cross-encoder** reads them *together* — every word attends to every word.
-Cost: per (query, doc) pair → only on ~100 candidates, not millions.
-
-<!-- end_slide -->
-
-# Appendix: How Scalar Quantization Works
-
-**Analogy: Measuring height with a "lazy ruler" that only has 256 notches.**
-
-![](images/sq-intuition.png)
-
-<!-- end_slide -->
-
-# Appendix: SQ in Practice — Search Blurry, Re-rank Sharp
-
-![](images/sq-rerank-flow.png)
-
-<!-- pause -->
-
-**The full cycle:**
-1. At index time: quantize vectors (blurry copy in RAM, sharp original on disk)
-2. At search time: compare query against blurry copies — fast, cheap, finds the neighborhood
-3. Fetch sharp originals from disk for top candidates only — exact distances, correct ordering
-
-**The blurry copy finds the neighborhood. The sharp original picks the winner.**
-
-<!-- end_slide -->
-
-# Appendix: How Product Quantization Works
-
-**Analogy: Instead of storing the whole shape, store a Lego instruction manual.**
-
-**What's a codebook?** A pre-trained dictionary of 256 "representative shapes" (centroids)
-per slice — built by running k-means on the data. Think of it as a box of 256 Lego bricks.
-
-![](images/pq-intuition.png)
-
-<!-- pause -->
-
-**The clever part — searching without decompressing:**
-
-```
-1. Query arrives
-2. Measure distance from query to each of the 256 bricks → small lookup table
-3. For each stored vector, just add up table entries:
-   Vector A = [brick #42, #7, #198]
-   Distance ≈ table[42] + table[7] + table[198]  ← just 3 additions!
-```
-
-No floating-point math. Just table lookups and additions.
-
-<!-- end_slide -->
-
-# Appendix: How Binary Quantization Works
-
-**Analogy: Reducing a photo to pure black and white — no grays.**
-
-```
-Original:  [+0.23, -0.89, +0.45, -0.12, +0.67, -0.34, +0.91, -0.56]
-                ↓      ↓      ↓      ↓      ↓      ↓      ↓      ↓
-Rule:      positive=1, negative=0
-                ↓      ↓      ↓      ↓      ↓      ↓      ↓      ↓
-Binary:    [  1,    0,    1,    0,    1,    0,    1,    0  ]
-```
-
-<!-- pause -->
-
-**Comparing two binary vectors — XOR + popcount:**
-
-```
-Vector A:  1 0 1 0 1 0 1 0
-Vector B:  1 1 1 0 0 0 1 1
-           ─ ✗ ─ ─ ✗ ─ ─ ✗  ← XOR: 1 wherever they differ
-
-XOR result: 0 1 0 0 1 0 0 1
-POPCNT:     count the 1s = 3  ← Hamming distance
-
-Two CPU instructions. No floating-point math at all.
-```
-
-<!-- pause -->
-
-**Catch:** +0.001 and +0.999 both become 1. Massive information loss.
-**Fix:** BQ for first pass (top 200), FP32 re-rank (top 10).
-
-<!-- end_slide -->
 
 # Appendix: Quantization Trade-offs
 

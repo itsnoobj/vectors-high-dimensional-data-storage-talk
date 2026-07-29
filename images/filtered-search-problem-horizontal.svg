@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 600" font-family="'Courier New', monospace">
   <!-- Background -->
-  <rect width="1400" height="600" fill="#2d2b3d"/>
+  <rect width="1400" height="600" fill="#1a1a2e"/>
   
   <!-- LEFT SIDE: Post-Filter -->
   <text x="300" y="45" text-anchor="middle" fill="#f7a8c4" font-size="22" font-weight="bold">Post-Filter (ANN → then filter)</text>
-  <text x="300" y="72" text-anchor="middle" fill="#8a8699" font-size="14">HNSW graph (50K docs)</text>
+  <text x="300" y="72" text-anchor="middle" fill="#a6adc8" font-size="14">HNSW graph (50K docs)</text>
   
   <!-- HNSW circle - left -->
   <circle cx="300" cy="220" r="130" fill="none" stroke="#6a6680" stroke-width="1.5" stroke-dasharray="8,4"/>
@@ -32,8 +32,8 @@
   <text x="360" y="385" fill="#cdd6f4" font-size="13">doesn't match</text>
   
   <!-- Explanation -->
-  <text x="300" y="430" text-anchor="middle" fill="#8a8699" font-size="14">ANN returns top 10 nearest</text>
-  <text x="300" y="452" text-anchor="middle" fill="#8a8699" font-size="14">→ filter: only 2 match tenant_id=42</text>
+  <text x="300" y="430" text-anchor="middle" fill="#a6adc8" font-size="14">ANN returns top 10 nearest</text>
+  <text x="300" y="452" text-anchor="middle" fill="#a6adc8" font-size="14">→ filter: only 2 match tenant_id=42</text>
   
   <!-- Big red X result -->
   <text x="260" y="500" fill="#f7a8c4" font-size="26" font-weight="bold">✗</text>
@@ -44,7 +44,7 @@
   
   <!-- RIGHT SIDE: Pre-Filter -->
   <text x="1000" y="45" text-anchor="middle" fill="#f5d6a0" font-size="22" font-weight="bold">Pre-Filter (filter → then ANN)</text>
-  <text x="1000" y="72" text-anchor="middle" fill="#8a8699" font-size="14">HNSW graph (50K docs)</text>
+  <text x="1000" y="72" text-anchor="middle" fill="#a6adc8" font-size="14">HNSW graph (50K docs)</text>
   
   <!-- HNSW circle - right -->
   <circle cx="1000" cy="220" r="130" fill="none" stroke="#6a6680" stroke-width="1.5" stroke-dasharray="8,4"/>
@@ -65,8 +65,8 @@
   <line x1="920" y1="290" x2="1000" y2="310" stroke="#6a6680" stroke-width="1" stroke-dasharray="4,3"/>
   
   <!-- Explanation -->
-  <text x="1000" y="400" text-anchor="middle" fill="#8a8699" font-size="14">200 docs match tenant_id=42</text>
-  <text x="1000" y="425" text-anchor="middle" fill="#8a8699" font-size="14">→ scattered across graph</text>
+  <text x="1000" y="400" text-anchor="middle" fill="#a6adc8" font-size="14">200 docs match tenant_id=42</text>
+  <text x="1000" y="425" text-anchor="middle" fill="#a6adc8" font-size="14">→ scattered across graph</text>
   
   <!-- Big X result -->
   <text x="960" y="490" fill="#f5d6a0" font-size="26" font-weight="bold">✗</text>

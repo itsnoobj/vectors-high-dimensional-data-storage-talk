@@ -4,7 +4,7 @@
   
   <!-- Left chart: p95 Latency -->
   <text x="350" y="40" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold">p95 Query Latency (ms) at 99% Recall</text>
-  <text x="350" y="62" text-anchor="middle" fill="#8a8699" font-size="11">Dataset: 50M Cohere embeddings (768 dimensions) | Less is better</text>
+  <text x="350" y="62" text-anchor="middle" fill="#a6adc8" font-size="12">Dataset: 50M Cohere embeddings (768 dimensions) | Less is better</text>
   
   <!-- pgvectorscale bar -->
   <text x="50" y="130" fill="#cdd6f4" font-size="12">PostgreSQL with pgvector</text>
@@ -20,11 +20,11 @@
   
   <!-- Axis -->
   <line x1="200" y1="270" x2="700" y2="270" stroke="#6c7086" stroke-width="1"/>
-  <text x="200" y="290" fill="#6c7086" font-size="10">0</text>
-  <text x="325" y="290" fill="#6c7086" font-size="10">500</text>
-  <text x="450" y="290" fill="#6c7086" font-size="10">1000</text>
-  <text x="575" y="290" fill="#6c7086" font-size="10">1500</text>
-  <text x="680" y="290" fill="#6c7086" font-size="10">2000</text>
+  <text x="200" y="290" fill="#a6adc8" font-size="12">0</text>
+  <text x="325" y="290" fill="#a6adc8" font-size="12">500</text>
+  <text x="450" y="290" fill="#a6adc8" font-size="12">1000</text>
+  <text x="575" y="290" fill="#a6adc8" font-size="12">1500</text>
+  <text x="680" y="290" fill="#a6adc8" font-size="12">2000</text>
   
   <!-- 28x callout -->
   <rect x="250" y="310" width="150" height="35" rx="6" fill="#a6e3a1" opacity="0.15" stroke="#a6e3a1" stroke-width="1.5"/>
@@ -32,7 +32,7 @@
   
   <!-- Right chart: QPS -->
   <text x="1050" y="40" text-anchor="middle" fill="#cdd6f4" font-size="18" font-weight="bold">Queries Per Second at 99% Recall</text>
-  <text x="1050" y="62" text-anchor="middle" fill="#8a8699" font-size="11">Dataset: 50M Cohere embeddings (768 dimensions) | More is better</text>
+  <text x="1050" y="62" text-anchor="middle" fill="#a6adc8" font-size="12">Dataset: 50M Cohere embeddings (768 dimensions) | More is better</text>
   
   <!-- pgvectorscale bar -->
   <text x="750" y="130" fill="#cdd6f4" font-size="12">PostgreSQL with pgvector</text>
@@ -48,11 +48,11 @@
   
   <!-- Axis -->
   <line x1="900" y1="270" x2="1350" y2="270" stroke="#6c7086" stroke-width="1"/>
-  <text x="900" y="290" fill="#6c7086" font-size="10">0</text>
-  <text x="1012" y="290" fill="#6c7086" font-size="10">100</text>
-  <text x="1125" y="290" fill="#6c7086" font-size="10">200</text>
-  <text x="1237" y="290" fill="#6c7086" font-size="10">300</text>
-  <text x="1340" y="290" fill="#6c7086" font-size="10">500</text>
+  <text x="900" y="290" fill="#a6adc8" font-size="12">0</text>
+  <text x="1012" y="290" fill="#a6adc8" font-size="12">100</text>
+  <text x="1125" y="290" fill="#a6adc8" font-size="12">200</text>
+  <text x="1237" y="290" fill="#a6adc8" font-size="12">300</text>
+  <text x="1340" y="290" fill="#a6adc8" font-size="12">500</text>
   
   <!-- 16x callout -->
   <rect x="950" y="310" width="150" height="35" rx="6" fill="#a6e3a1" opacity="0.15" stroke="#a6e3a1" stroke-width="1.5"/>
