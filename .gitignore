@@ -37,3 +37,8 @@ kiro-chat
 # Local reference material
 learning/
 vector_storage_at_scale_v2.md
+
+# Local files
+HANDOFF.md
+SPEAKER_NOTES.md
+*.pdf
