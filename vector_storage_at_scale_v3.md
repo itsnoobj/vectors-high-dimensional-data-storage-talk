@@ -165,13 +165,19 @@ then local roads."*
 
 ~95-99% recall, 1-5ms latency.
 
-<span style="color: #f38ba8">Lives entirely in RAM.</span>
+<span style="color: #f38ba8">Index persisted to disk, but
+needs full buffer cache residency
+for fast lookups.</span>
 
 <!-- column: 1 -->
 
 ![](images/hnsw.png)
 
 <!-- reset_layout -->
+
+<!-- pause -->
+
+<span style="color: #6c7086">*ANN = Approximate Nearest Neighbor · HNSW = Hierarchical Navigable Small World · Recall@K = % of true top-K found*</span>
 
 <!-- end_slide -->
 
@@ -201,7 +207,7 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 
 # The Cost of Getting It Wrong
 
-![](images/gifs/interstellar.gif)
+![](images/gifs/squid-game-eliminated.gif)
 
 **Three real patterns we see teams fall into:**
 
@@ -231,7 +237,13 @@ made without doing the math first.</span>
 
 ![](images/three-levers.png)
 
-<span style="color: #a6e3a1">**920 GB → 5 GB. Same 100M vectors. Do them in order.**</span>
+<span style="color: #a6e3a1">**920 GB → 5 GB compressed index. Full vectors stay on SSD for re-rank.**</span>
+
+<span style="color: #6c7086">*(Do them in order: dimensions first, then bits, then disk.)*</span>
+
+<!-- pause -->
+
+<span style="color: #6c7086">*MRL = Matryoshka Representation Learning · SQ/PQ/BQ = Scalar/Product/Binary Quantization · DiskANN = disk-based ANN index*</span>
 
 <!-- end_slide -->
 
@@ -260,14 +272,18 @@ python scripts/quantization_demo.py
 | Method | Index Size (1M) | Recall@10 | Notes |
 |--------|----------------|-----------|-------|
 | FP32 (baseline) | 6.1 GB | 100% | Exact, expensive |
-| Binary (1-bit) | 192 MB | ~10%* | Fast but imprecise alone |
-| Binary + re-rank | 192 MB + disk | ~99% | The production pattern |
+| Binary (1-bit, no rerank) | 192 MB | ~10% | Hamming alone loses too much |
+| Binary + rerank top 200 | 192 MB + disk | ~92-96% | **The production pattern** |
 
 <!-- pause -->
 
 **Why BQ + re-rank works:** XOR eliminates 99% of candidates → fetch ~200 full vectors to re-rank.
 
 <span style="color: #f9e2af">*Recall = "of the true top 10, how many did we actually find?"*</span>
+
+<!-- pause -->
+
+<span style="color: #6c7086">*BQ = Binary Quantization · FP32 = 32-bit float · XOR = bitwise comparison · Re-rank = verify top candidates with full precision*</span>
 
 <!-- end_slide -->
 
@@ -324,6 +340,8 @@ Then the filter throws 9 of them away.
 
 <!-- column: 1 -->
 
+![](images/gifs/squid-game-red-light.gif)
+
 **Result:**
 
 Asked for 10 results.
@@ -358,7 +376,7 @@ Just an empty page for the user.
 | Very low (2-10) | Partial indexes | ✅ Yes — separate graph per value |
 | Low (10-100) | Partial indexes | ✅ Yes — but many indexes to manage |
 | Medium (100-10K) | Table partitioning | ✅ Yes — one partition per tenant |
-| High (10K+) | `iterative_scan` | ❌ No — scans full graph, filters after |
+| High (10K+) | `iterative_scan` | ⚠️ Expands ANN scan, post-filters. Tune `scan_limit`. |
 
 <!-- pause -->
 
@@ -414,55 +432,6 @@ No error. No alert. No log line.
 
 <!-- end_slide -->
 
-# "But What About 2M-Token Context Windows?"
-
-**Gemini has 2M tokens. Claude has 1M. Do you even need retrieval?**
-
-| | Long Context | RAG |
-|---|---|---|
-| **Cost/query** | <span style="color: #f38ba8">$0.20–$2.00</span> | <span style="color: #a6e3a1">$0.00008</span> |
-| **Latency** | <span style="color: #f38ba8">20–60s</span> | <span style="color: #a6e3a1">~1s</span> |
-| **Multi-fact recall** | <span style="color: #f38ba8">~60%</span> | <span style="color: #a6e3a1">~95%+</span> |
-| **Freshness** | Reload all | Incremental |
-| **Access control** | All or nothing | Per-chunk |
-
-<!-- pause -->
-
-<span style="color: #f9e2af">**1,250x cost difference at scale.**</span>
-
-<!-- end_slide -->
-
-# When to Use Which
-
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
-**<span style="color: #a6e3a1">Long context wins:</span>**
-
-- Static docs < 100K tokens
-- One-off analysis
-- "What's concerning here?"
-- Full-document reasoning
-
-<!-- column: 1 -->
-
-**<span style="color: #89b4fa">RAG wins:</span>**
-
-- Everything at scale
-- Interactive latency (<2s)
-- Frequent updates
-- Multi-tenant access control
-- Cited sources
-
-<!-- reset_layout -->
-
-<!-- pause -->
-
-<span style="color: #f9e2af">Long context didn't kill RAG. It changed the shape of the decision.</span>
-
-<!-- end_slide -->
-
 # Hybrid Search: BM25 + Vectors
 
 **Vector search misses exact terms. Keyword search misses meaning.**
@@ -490,6 +459,10 @@ WHERE content @@@ 'payment refund timeout';
 
 No separate service. No sync. Same transaction.
 
+<!-- pause -->
+
+<span style="color: #6c7086">*BM25 = keyword ranking algorithm · RRF = Reciprocal Rank Fusion (merge two result lists by rank)*</span>
+
 <!-- end_slide -->
 
 # The Retrieval Pipeline Has Changed (2026)
@@ -512,19 +485,26 @@ No separate service. No sync. Same transaction.
 
 # The End
 
-<!-- column_layout: [1, 1] -->
+<!-- column_layout: [2, 1] -->
 
 <!-- column: 0 -->
 
-**<span style="color: #f9e2af">Vectors aren't special. Architecture decisions are.</span>** 🚀
+**Remember Month 10?** *"Maybe we need Pinecone?"*
 
-**Questions?**
+<span style="color: #a6e3a1">**The rewrite:**</span>
 
-📬 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span>
+```
+✅ Compressed index: RAM bill cut 25x
+✅ Partition by tenant: recall stays 96%+
+✅ Weekly eval: drift caught before users notice
+✅ One database: no sync, no stale vectors
+```
 
-🌐 <span style="color: #89b4fa">noobj.me</span>
+<!-- pause -->
 
-**Slides + code + RAG checklist:**
+<span style="color: #f9e2af">**One rule: measure recall under real filters before buying another database.**</span>
+
+📬 <span style="color: #89b4fa">jeevan.dc24@alumni.iimb.ac.in</span> · 🌐 <span style="color: #89b4fa">noobj.me</span>
 
 ![](images/qr-repo.png)
 
@@ -822,7 +802,7 @@ LIMIT 10;
 3. **DiskANN** — github.com/microsoft/DiskANN (MIT)
 4. **ParadeDB** — github.com/paradedb/paradedb (AGPL)
 5. **Matryoshka Embeddings** — arxiv.org/abs/2205.13147
-6. **pgvector 50M Benchmark** — Towards AI (July 2026)
+6. **pgvector 50M Benchmark** — github.com/timescale/pgvectorscale/blob/main/BENCHMARKS.md
 7. **RAGAS** — github.com/explodinggradients/ragas (Apache 2.0)
 8. **BGE-Reranker** — huggingface.co/BAAI/bge-reranker-v2-m3
 9. **Embedding Quantization** — huggingface.co/blog/embedding-quantization
