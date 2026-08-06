@@ -58,7 +58,7 @@ Month 8:  "Enterprise rollout"
 Month 9:  "Add per-tenant filtering"
           → recall silently drops to 40% 🔇
 
-Month 10: "Maybe we need Pinecone?"
+Month 10: "Maybe we need a separate vector DB?"
           → now syncing two databases forever 🔄
 ```
 
@@ -170,6 +170,12 @@ vs
 
 <!-- end_slide -->
 
+# &nbsp;
+
+![](images/transition-sort-order.png)
+
+<!-- end_slide -->
+
 # Why Vector Indexing Is Different
 
 <!-- column_layout: [1, 1] -->
@@ -196,44 +202,31 @@ C = [0.34, 0.76, 0.22, ..., 0.48]
 
 <!-- pause -->
 
-Which comes first — A or B? There's no "less than" for 1536 dimensions.
+No "less than" for 1536 dimensions.
 
-**Exact search = check every vector.** That's too slow at scale.
+**Exact search = check every vector** — too slow at scale.
 
-**But what if we don't need the *exact* closest — just <span style="color: #a6e3a1">*close enough*</span>?**
+**What if we only need <span style="color: #a6e3a1">*close enough*</span>?**
 
 <!-- end_slide -->
 
 # How ANN (Approximate Nearest Neighbor) Indexes Work
 
-**We need "close enough" without checking everything.**
+**Close enough — without checking every vector.**
 
-<!-- column_layout: [1, 2] -->
+![image:width:75%](images/hnsw.png)
 
-<!-- column: 0 -->
-
-**<span style="color: #4EC9B0">HNSW</span>**
-
-Multi-layer navigable graph.
-
-*"GPS: highways first,
-then local roads."*
-
-~95-99% recall, 1-5ms latency.
-
-<span style="color: #f38ba8">Index persisted to disk, but
-needs full buffer cache residency
-for fast lookups.</span>
-
-<!-- column: 1 -->
-
-![](images/hnsw.png)
-
-<!-- reset_layout -->
+**<span style="color: #4EC9B0">HNSW</span>** — multi-layer graph · ~95-99% recall · 1-5ms · <span style="color: #f38ba8">must stay in RAM</span>
 
 <!-- pause -->
 
-<span style="color: #6c7086">*ANN = Approximate Nearest Neighbor · HNSW = Hierarchical Navigable Small World · Recall@K = % of true top-K found*</span>
+<span style="color: #6c7086">*ANN = Approximate Nearest Neighbor · HNSW = Hierarchical Navigable Small World*</span>
+
+<!-- end_slide -->
+
+# &nbsp;
+
+![](images/transition-ram-wall.png)
 
 <!-- end_slide -->
 
@@ -274,7 +267,7 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 
 <!-- pause -->
 
-**2. <span style="color: #f38ba8">"Let's add Pinecone alongside Postgres"</span>**
+**2. <span style="color: #f38ba8">"Let's add a separate vector DB alongside Postgres"</span>**
 Two systems to sync, stale vectors, silent recall drops → +$2K/mo + sync bugs
 
 <!-- pause -->
@@ -311,6 +304,12 @@ made without doing the math first.</span>
 
 # Lever 2: Quantization
 
+![](images/quantization-lite.png)
+
+<!-- end_slide -->
+
+# Lever 2: Quantization — The Details
+
 ![](images/quantization-blocks.png)
 
 <!-- end_slide -->
@@ -323,23 +322,11 @@ python scripts/quantization_demo.py
 
 <!-- pause -->
 
-**What we just saw:**
-
-| Method | Index Size (1M) | Recall@10 | Notes |
-|--------|----------------|-----------|-------|
-| FP32 (baseline) | 6.1 GB | 100% | Exact, expensive |
-| Binary (1-bit, no rerank) | 192 MB | ~10% | Hamming alone loses too much |
-| Binary + rerank top 200 | 192 MB + disk | ~92-96% | **The production pattern** |
-
-<!-- pause -->
-
-**Why BQ + re-rank works:** XOR eliminates 99% of candidates → fetch ~200 full vectors to re-rank.
-
-<span style="color: #f9e2af">*Recall = "of the true top 10, how many did we actually find?"*</span>
-
-<!-- pause -->
-
-<span style="color: #6c7086">*BQ = Binary Quantization · FP32 = 32-bit float · XOR = bitwise comparison · Re-rank = verify top candidates with full precision*</span>
+| Method | Size (1M) | Recall@10 |
+|--------|-----------|-----------|
+| FP32 (baseline) | 6.1 GB | 100% |
+| Binary (1-bit) | 192 MB | ~10% |
+| Binary + rerank | 192 MB | ~92-96% |
 
 <!-- end_slide -->
 
@@ -369,29 +356,21 @@ python scripts/quantization_demo.py
 
 # DiskANN: The Architecture
 
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
 ![](images/diskann-query-flow.png)
 
-<!-- column: 1 -->
+<!-- end_slide -->
 
-**RAM:** Compressed graph + quantized vectors (~25 GB)
+# &nbsp;
 
-**SSD:** Full vectors for re-rank (~600 GB)
-
-**100M vectors cost:**
-- HNSW: 920 GB RAM → <span style="color: #f38ba8">~$5,000/mo</span>
-- DiskANN: 25 GB RAM + SSD → <span style="color: #a6e3a1">~$200/mo</span>
-
-<span style="color: #a6e3a1">**25x cheaper. Same recall. +5-10ms latency.**</span>
-
-<!-- reset_layout -->
+![](images/transition-silent-failures.png)
 
 <!-- end_slide -->
 
 # Silent Failure #1: Filtered Search
+
+<!-- column_layout: [3, 2] -->
+
+<!-- column: 0 -->
 
 ```sql
 SELECT * FROM products
@@ -401,13 +380,8 @@ ORDER BY embedding <=> query LIMIT 10;
 
 <!-- pause -->
 
-**⚠️ HNSW returns the 10 nearest vectors. Filter throws 9 away.**
-
-<!-- pause -->
-
-<!-- column_layout: [2, 1] -->
-
-<!-- column: 0 -->
+**⚠️ HNSW returns 10 nearest vectors.**
+**Filter throws 9 away.**
 
 Asked for 10. Got 0.
 
@@ -430,23 +404,6 @@ Asked for 10. Got 0.
 # The Fixes: Three Approaches
 
 ![](images/filtered-search-fixes.png)
-
-<!-- end_slide -->
-
-# Filtered Search: What to Use When
-
-| Filter Cardinality | Strategy | True filter? |
-|-------------------|----------|-------------|
-| Very low (2-10) | Partial indexes | ✅ Yes — separate graph per value |
-| Low (10-100) | Partial indexes | ✅ Yes — but many indexes to manage |
-| Medium (100-10K) | Table partitioning | ✅ Yes — one partition per tenant |
-| High (10K+) | `iterative_scan` | ⚠️ Expands ANN scan, post-filters. Tune `scan_limit`. |
-
-<!-- pause -->
-
-<span style="color: #f38ba8">**This is an active research area.**</span>
-
-![](images/gifs/math-lady.gif)
 
 <!-- end_slide -->
 
@@ -475,13 +432,19 @@ No error. No alert. No log line.
 
 <!-- end_slide -->
 
+# &nbsp;
+
+![](images/transition-separate-db.png)
+
+<!-- end_slide -->
+
 # Is a separate vector DB still needed?
 
 ![](images/architecture-decision.png)
 
 <!-- end_slide -->
 
-# The 2026 Answer: Probably Not
+# The 2026 Answer: Often No — But It Depends
 
 ![](images/benchmark-pgvectorscale-vs-pinecone.png)
 
@@ -489,51 +452,37 @@ No error. No alert. No log line.
 
 <span style="color: #a6e3a1">**pgvector + pgvectorscale: 28x faster, 16x more throughput, 75% less cost**</span>
 
+Usually one Postgres wins. Dedicated engines earn their keep only at extreme scale — measure first.
+
 <span style="color: #6c7086">Source: github.com/timescale/pgvectorscale | All open source (PostgreSQL License + Apache 2.0)</span>
 
 <!-- end_slide -->
 
-# The Data Sync Tax
+# &nbsp;
 
-![](images/data-sync-tax.png)
+![](images/transition-hybrid-search.png)
 
 <!-- end_slide -->
 
 # Hybrid Search: BM25 + Vectors
 
-**Vector search misses exact terms. Keyword search misses meaning.**
+**Vector search misses exact terms. Keyword misses meaning.**
 
-**Query:** "how to handle payment refund timeout"
-
-<span style="color: #89b4fa">**BM25 (keyword):**</span> Finds exact "refund timeout" → precise
-
-<span style="color: #a6e3a1">**Vector (semantic):**</span> Finds "payment reversal logic" → broader
-
-<span style="color: #f9e2af">**Combined:**</span> Better recall than either alone.
-
-<!-- pause -->
-
-**pgvector + ParadeDB — both PostgreSQL extensions, same DB.**
-
-```sql
-CREATE EXTENSION pg_search;
-CREATE INDEX ON docs USING bm25 (content);
-
-SELECT *, paradedb.score(id) FROM docs
-WHERE content @@@ 'payment refund timeout';
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ Query:  "how to handle payment refund timeout"               │
+├──────────────────────────────────────────────────────────────┤
+│ BM25      →  matches "refund timeout"        (precise)       │
+│ Vector    →  finds "payment reversal logic"  (broader)       │
+│ Combined  →  best recall                                     │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-No separate service. No sync. Same transaction.
+**Both are PostgreSQL extensions — one DB, one query.**
 
-<!-- pause -->
+No separate service · no sync · same transaction.
 
-<span style="color: #6c7086">*BM25 = keyword ranking algorithm · RRF = Reciprocal Rank Fusion (merge two result lists by rank)*</span>
-
-<!-- end_slide -->
-
-# The Retrieval Pipeline Has Changed (2026)
-
-![](images/retrieval-pipeline-2023-vs-2026.png)
+<span style="color: #6c7086">*BM25 = keyword ranking · RRF = Reciprocal Rank Fusion*</span>
 
 <!-- end_slide -->
 
@@ -555,34 +504,17 @@ No separate service. No sync. Same transaction.
 
 <!-- column: 0 -->
 
-**Remember Month 10?** *"Maybe we need Pinecone?"*
-
-<span style="color: #a6e3a1">**The rewrite:**</span>
-
-<!-- pause -->
-
-```
-✅ Compressed index: RAM bill cut 25x
-✅ Partition by tenant: recall stays 96%+
-✅ Weekly eval: drift caught before users notice
-✅ One database: no sync, no stale vectors
-```
-
-<span style="color: #f9e2af">**One rule: measure recall under real filters before buying another database.**</span>
-
-📬 <span style="color: #89b4fa">hello@noobj.me</span>
-
-🌐 <span style="color: #89b4fa">noobj.me</span>
+![image:width:70%](images/gifs/thank-you-bow.gif)
 
 <!-- column: 1 -->
-
-<!-- pause -->
-
-![](images/gifs/thank-you-bow.gif)
 
 ![](images/qr-repo.png)
 
 <span style="color: #6c7086">Scan for the repo & slides</span>
+
+📬 <span style="color: #89b4fa">hello@noobj.me</span>
+
+🌐 <span style="color: #89b4fa">noobj.me</span>
 
 <!-- reset_layout -->
 

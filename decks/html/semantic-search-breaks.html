@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Storing High-Dimensional Data at Scale</title>
+<title>When Semantic Search Breaks</title>
 <style>
 /* ---------- theme tokens ---------- */
 :root {
@@ -112,7 +112,7 @@ img.sm { max-height:82vh; }
 .col { min-width:0; display:flex; flex-direction:column; gap:10px; justify-content:center; }
 .col img { align-self:center; }
 .gif-row { display:flex; gap:16px; justify-content:center; align-items:center; }
-.gif-row img { height:22vh; border-radius:10px; object-fit:cover; box-shadow:0 8px 24px rgba(0,0,0,.28); }
+.gif-row img { height:28vh; border-radius:10px; object-fit:cover; box-shadow:0 8px 24px rgba(0,0,0,.28); }
 
 .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; }
 .slide.dark .card { border-color:transparent; }
@@ -151,9 +151,9 @@ img.sm { max-height:82vh; }
 <!-- 1 · Title (DARK) -->
 <div class="slide dark title active">
   <span class="tag">pgvector · scale · architecture</span>
-  <div class="big">Storing High-Dimensional<br>Data at Scale</div>
-  <p class="lead" style="margin-top:22px;max-width:760px;">The RAM Wall · Quantization · Filtered Search · <span class="yellow">and when to use what</span></p>
-  <p class="muted" style="margin-top:32px;letter-spacing:.08em;">JEEVAN · 2026</p>
+  <div class="big">When Semantic Search Breaks:<br>RAM Walls, Silent Failures,<br>and the Architecture Decisions</div>
+  <p class="lead" style="margin-top:22px;max-width:760px;">Quantization · Filtered Search · DiskANN · <span class="yellow">When to Use What</span></p>
+  <p class="muted" style="margin-top:32px;letter-spacing:.08em;">JEEVAN · Open Source Summit Korea · August 2026</p>
   <div class="footer">← / → navigate · <span class="blue">f</span> fullscreen</div>
 </div>
 
@@ -182,7 +182,7 @@ img.sm { max-height:82vh; }
 <!-- 4 · Why now -->
 <div class="slide">
   <h1>Why This Talk, Why Now</h1>
-  <div class="content"><div class="two g32">
+  <div class="content"><div class="two" style="grid-template-columns:2fr 3fr;">
     <div class="col">
 <pre>Month 1:  "Let's add semantic search!"
           → pgvector, 100K vectors, works great ✅
@@ -284,6 +284,11 @@ Month 10: "Maybe we need Pinecone?"
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
+<!-- Q · transition -->
+<div class="slide dark title">
+  <div class="big">How do you search<br>when there's no sort order?</div>
+</div>
+
 <!-- 7 · Vector indexing different -->
 <div class="slide">
   <h1>Why Vector Indexing Is Different</h1>
@@ -299,8 +304,8 @@ B = [0.93, 0.12, 0.38, ..., 0.71]
 C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
       <img class="gif" style="max-height:26vh;" src="images/gifs/exact-search-slow.png" alt="exact search is slow">
       <div class="fragment">
-        <p>Which comes first — A or B? No "less than" for 1536 dims.</p>
-        <p><strong>Exact search = check every vector.</strong> Too slow at scale.</p>
+        <p>No "less than" for 1536 dims.</p>
+        <p><strong>Exact search = check every vector</strong> — too slow at scale.</p>
         <p>What if we only need <span class="green">close enough</span>?</p>
       </div>
     </div>
@@ -311,18 +316,19 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 8 · ANN / HNSW -->
 <div class="slide">
   <h1><span class="kicker">Approximate Nearest Neighbor</span>How ANN Indexes Work</h1>
-  <div class="content"><div class="two g21">
-    <div class="figc"><div class="figure md"><img class="md" src="images/hnsw.png" alt="HNSW graph"></div></div>
-    <div class="col">
-      <p class="teal" style="font-weight:700;font-size:1.2rem;">HNSW</p>
-      <p>Multi-layer navigable graph.</p>
-      <p class="muted"><em>"GPS: highways first, then local roads."</em></p>
-      <p>~95–99% recall · 1–5ms latency.</p>
-      <p class="red">Persisted to disk, but needs full buffer-cache residency for fast lookups.</p>
+  <div class="content">
+    <div class="figc"><div class="figure lg"><img class="lg" src="images/hnsw.png" alt="HNSW graph"></div></div>
+    <div class="col" style="flex:0 0 auto;text-align:center;margin-top:.2rem">
+      <p><span class="teal" style="font-weight:700">HNSW</span> — multi-layer graph · ~95–99% recall · 1–5ms · <span class="red">must stay in RAM</span></p>
     </div>
-  </div></div>
-  <p class="cap fragment">ANN = Approximate Nearest Neighbor · HNSW = Hierarchical Navigable Small World · Recall@K = % of true top-K found</p>
+  </div>
+  <p class="cap fragment">ANN = Approximate Nearest Neighbor · HNSW = Hierarchical Navigable Small World</p>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
+</div>
+
+<!-- Q · transition -->
+<div class="slide dark title">
+  <div class="big">What happens when your<br>index outgrows RAM?</div>
 </div>
 
 <!-- 9 · RAM wall (DARK) -->
@@ -382,19 +388,23 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
-<!-- 13 · Lever 2 -->
+<!-- 13 · Lever 2 concept -->
 <div class="slide">
   <h1><span class="kicker">Lever 2 · Reduce Bits</span>Quantization</h1>
-  <div class="content"><div class="two">
-    <div class="figc"><div class="figure lg"><img class="lg" src="images/quantization-blocks.png" alt="quantization"></div></div>
-    <div class="col">
-      <p><strong>Store fewer bits per number.</strong></p>
-      <p>FP32 → FP16 → INT8 → <span class="teal">1-bit</span></p>
-      <p class="green"><strong>4–32× smaller index.</strong></p>
-      <p>Lose precision in the index, then <span class="green">re-rank the top candidates with full vectors to restore recall.</span></p>
-      <p class="muted">SQ = Scalar · PQ = Product · BQ = Binary Quantization</p>
-    </div>
-  </div></div>
+  <div class="content" style="justify-content:center;align-items:center;text-align:center;gap:1.2rem">
+    <p style="font-size:1.3rem"><strong>Store fewer bits per number.</strong></p>
+    <p style="font-size:1.2rem">FP32 → FP16 → INT8 → <span class="teal" style="font-weight:700">1-bit</span></p>
+    <p class="green" style="font-size:1.4rem"><strong>4–32× smaller index.</strong></p>
+    <p>Lose precision in the index, then <span class="green">re-rank top candidates with full vectors</span> to restore recall.</p>
+    <p class="muted">SQ = Scalar · PQ = Product · BQ = Binary Quantization</p>
+  </div>
+  <div class="footer">Storing High-Dimensional Data at Scale</div>
+</div>
+
+<!-- 13b · Lever 2 detail -->
+<div class="slide">
+  <h1><span class="kicker">Lever 2 · Reduce Bits</span>Quantization — The Details</h1>
+  <div class="content"><div class="figc"><div class="figure lg"><img class="lg" src="images/quantization-blocks.png" alt="quantization"></div></div></div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
@@ -456,6 +466,11 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
     </div>
   </div></div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
+</div>
+
+<!-- Q · transition -->
+<div class="slide dark title">
+  <div class="big">What can go wrong<br>after you solve the wall?</div>
 </div>
 
 <!-- 17 · Silent failure 1 (DARK) -->
@@ -541,6 +556,11 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
+<!-- Q · transition -->
+<div class="slide dark title">
+  <div class="big">So… do you still need<br>a separate vector DB?</div>
+</div>
+
 <!-- 23 · separate DB needed? -->
 <div class="slide">
   <h1>Is a Separate Vector DB Still Needed?</h1>
@@ -550,7 +570,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
       <p><strong>The question every team eventually asks.</strong></p>
       <p class="red">A separate vector DB → sync tax, stale vectors, another system to run.</p>
       <p class="green">pgvector inside your existing Postgres → one system, one transaction.</p>
-      <p class="muted">Decide on scale, latency budget, and ops burden — not hype.</p>
+      <p class="muted">The right answer depends on scale, latency budget, and ops burden — not hype.</p>
     </div>
   </div></div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
@@ -558,11 +578,12 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 
 <!-- 24 · 2026 answer -->
 <div class="slide">
-  <h1>The 2026 Answer: Probably Not</h1>
+  <h1>The 2026 Answer: Often No — But It Depends</h1>
   <div class="content" style="gap:10px;">
     <div class="figc"><div class="figure lg"><img class="lg" src="images/benchmark-pgvectorscale-vs-pinecone.png" alt="benchmark"></div></div>
     <p class="center">50M Cohere embeddings · 768 dims · 99% recall · same AWS hardware</p>
     <p class="green center"><strong>pgvector + pgvectorscale: 28× faster, 16× more throughput, 75% less cost</strong></p>
+    <p class="center muted">Usually one Postgres wins. Dedicated engines earn their keep only at extreme scale — measure first.</p>
     <p class="cap">Source: github.com/timescale/pgvectorscale · open source (PostgreSQL License + Apache 2.0)</p>
   </div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
@@ -586,25 +607,29 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 26 · hybrid search -->
 <div class="slide">
   <h1>Hybrid Search: BM25 + Vectors</h1>
-  <div class="content"><div class="two">
+  <div class="content">
+    <div class="two">
     <div class="col">
-      <p><strong>Vector search misses exact terms. Keyword search misses meaning.</strong></p>
-      <p><strong>Query:</strong> "how to handle payment refund timeout"</p>
-      <p><span class="blue"><strong>BM25:</strong></span> exact "refund timeout" → precise</p>
-      <p><span class="green"><strong>Vector:</strong></span> "payment reversal logic" → broader</p>
-      <p><span class="yellow"><strong>Combined:</strong></span> better recall than either alone.</p>
-      <p class="cap" style="text-align:left;">BM25 = keyword ranking · RRF = Reciprocal Rank Fusion</p>
+      <p><strong>Vector misses exact terms. Keyword misses meaning.</strong></p>
+      <div class="card" style="display:flex;flex-direction:column;gap:.5rem">
+        <p class="muted"><strong>Query:</strong> <em>"how to handle payment refund timeout"</em></p>
+        <p><span class="blue"><strong>BM25</strong></span> → matches "refund timeout" <span class="muted">(precise)</span></p>
+        <p><span class="green"><strong>Vector</strong></span> → finds "payment reversal logic" <span class="muted">(broader)</span></p>
+        <p><span class="yellow"><strong>Combined</strong></span> → best recall</p>
+      </div>
     </div>
     <div class="col">
-      <p><strong>pgvector + ParadeDB</strong> — both PostgreSQL extensions, same DB.</p>
+      <p><strong>Both are PostgreSQL extensions — one DB, one query.</strong></p>
 <pre><span class="sql-kw">CREATE EXTENSION</span> pg_search;
 <span class="sql-kw">CREATE INDEX ON</span> docs <span class="sql-kw">USING</span> bm25 (content);
 
 <span class="sql-kw">SELECT</span> *, paradedb.score(id) <span class="sql-kw">FROM</span> docs
 <span class="sql-kw">WHERE</span> content @@@ 'payment refund timeout';</pre>
-      <p>No separate service. No sync. Same transaction.</p>
+      <p class="green">No separate service · no sync · same transaction.</p>
     </div>
-  </div></div>
+    </div>
+    <p class="cap">BM25 = keyword ranking · RRF = Reciprocal Rank Fusion</p>
+  </div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
