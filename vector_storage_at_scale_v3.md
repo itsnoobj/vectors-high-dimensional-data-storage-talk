@@ -134,6 +134,42 @@ Month 10: "Maybe we need Pinecone?"
 
 <!-- end_slide -->
 
+# 💻 Demo: Two Sentences → Numbers → Similarity
+
+```bash
+python scripts/compare.py
+```
+
+<!-- pause -->
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+<span style="color: #a6e3a1">**No shared words · same meaning → high %**</span>
+
+`"users are cancelling their subscriptions"`
+vs
+`"customer churn is rising"`
+
+<!-- column: 1 -->
+
+<span style="color: #f38ba8">**Shared word · different meaning → low %**</span>
+
+`"the bank is closed for the holiday"`
+vs
+`"the river bank was steep and muddy"`
+
+<!-- reset_layout -->
+
+<!-- pause -->
+
+**The output shows 384 dims per sentence.**
+
+<span style="color: #f9e2af">Hold that number — every vector is 384–1536 floats. That's exactly what costs 920 GB of RAM at scale.</span>
+
+<!-- end_slide -->
+
 # Why Vector Indexing Is Different
 
 <!-- column_layout: [1, 1] -->
@@ -523,6 +559,8 @@ No separate service. No sync. Same transaction.
 
 <span style="color: #a6e3a1">**The rewrite:**</span>
 
+<!-- pause -->
+
 ```
 ✅ Compressed index: RAM bill cut 25x
 ✅ Partition by tenant: recall stays 96%+
@@ -530,19 +568,21 @@ No separate service. No sync. Same transaction.
 ✅ One database: no sync, no stale vectors
 ```
 
-<!-- pause -->
-
 <span style="color: #f9e2af">**One rule: measure recall under real filters before buying another database.**</span>
 
 📬 <span style="color: #89b4fa">hello@noobj.me</span>
 
 🌐 <span style="color: #89b4fa">noobj.me</span>
 
-![](images/qr-repo.png)
-
 <!-- column: 1 -->
 
-![](images/gifs/thank-you-bow-large.gif)
+<!-- pause -->
+
+![](images/gifs/thank-you-bow.gif)
+
+![](images/qr-repo.png)
+
+<span style="color: #6c7086">Scan for the repo & slides</span>
 
 <!-- reset_layout -->
 
