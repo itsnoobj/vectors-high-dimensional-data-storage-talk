@@ -14,7 +14,7 @@ body{background:#0e1020;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Se
 h1{flex:0 0 auto;font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.2;margin-bottom:18px;max-width:92%}
 h1 .kicker{display:block;font-size:.76rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
 h1::after{content:'';display:block;width:52px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--mauve));margin-top:14px}
-.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px;overflow:hidden;font-size:1.1rem;line-height:1.58;color:var(--subtext)}
+.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:18px;overflow:hidden;font-size:1.1rem;line-height:1.58;color:var(--subtext);padding-top:10px}
 .content p{margin:0}
 .content strong{color:var(--text);font-weight:700}
 .lead{font-size:1.12rem;color:var(--text)}
@@ -159,24 +159,24 @@ Month 10: "Maybe we need a separate vector DB?"
 <!-- 7. Demo: Similarity -->
 <div class="slide dark">
   <h1><span class="kicker">Demo</span>Two Sentences → Numbers → Similarity</h1>
-  <div class="content">
+  <div class="content" style="justify-content:space-evenly">
     <div class="two">
-      <div class="col">
-        <h2 style="font-size:1.1rem" class="green">✅ High Similarity</h2>
-        <p><em>Same meaning, no shared words</em></p>
-        <p><code>"cancel my subscription"</code></p>
-        <p><code>"I want to unsubscribe"</code></p>
-        <p class="fragment"><strong>→ ~68%</strong></p>
+      <div class="col" style="gap:16px">
+        <h2 style="font-size:1.3rem" class="green">✅ High Similarity</h2>
+        <p style="font-size:1.1rem"><em>Same meaning, no shared words</em></p>
+        <p style="font-size:1.15rem"><code>"cancel my subscription"</code></p>
+        <p style="font-size:1.15rem"><code>"I want to unsubscribe"</code></p>
+        <p class="fragment" style="font-size:1.4rem"><strong>→ ~68%</strong></p>
       </div>
-      <div class="col">
-        <h2 style="font-size:1.1rem" class="red">❌ Low Similarity</h2>
-        <p><em>Same word, different meaning</em></p>
-        <p><code>"the bank is closed for the holiday"</code></p>
-        <p><code>"the river bank was steep and muddy"</code></p>
-        <p class="fragment"><strong>→ ~26%</strong></p>
+      <div class="col" style="gap:16px">
+        <h2 style="font-size:1.3rem" class="red">❌ Low Similarity</h2>
+        <p style="font-size:1.1rem"><em>Same word, different meaning</em></p>
+        <p style="font-size:1.15rem"><code>"the bank is closed for the holiday"</code></p>
+        <p style="font-size:1.15rem"><code>"the river bank was steep and muddy"</code></p>
+        <p class="fragment" style="font-size:1.4rem"><strong>→ ~26%</strong></p>
       </div>
     </div>
-    <p class="fragment yellow" style="text-align:center;margin-top:18px">384 dimensions per sentence. That's what costs 920 GB at scale.</p>
+    <p class="fragment yellow" style="text-align:center;font-size:1.2rem">384 dimensions per sentence. That's what costs 920 GB at scale.</p>
   </div>
 </div>
 
@@ -198,7 +198,7 @@ Month 10: "Maybe we need a separate vector DB?"
         </div>
         <p class="fragment"><strong>That's an embedding.</strong> A GPS coordinate for meaning — close meanings, close numbers.</p>
       </div>
-      <div class="col figc"><img src="../../images/gifs/mind-blown.gif" class="gif" style="max-height:34vh"></div>
+      <div class="col figc"><img src="../../images/gifs/mind-blown.gif" class="gif" style="max-height:45vh"></div>
     </div>
   </div>
 </div>
@@ -214,7 +214,7 @@ Month 10: "Maybe we need a separate vector DB?"
 
 Distance = √((x₂-x₁)² + (y₂-y₁)²)</pre>
       </div>
-      <div class="col figc"><img src="../../images/dist-2-points.png" class="photo" style="max-height:30vh"></div>
+      <div class="col figc"><img src="../../images/dist-2-points.png" class="photo" style="max-height:42vh"></div>
     </div>
     <div class="fragment">
       <p><strong>Same idea, just more dimensions:</strong></p>
@@ -256,7 +256,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 12. Approximate Is Good Enough -->
 <div class="slide dark">
   <h1>The Key Insight: <span class="green">Approximate Is Good Enough</span></h1>
-  <div class="content">
+  <div class="content" style="justify-content:space-evenly">
     <p><strong>What if we don't need the <em>exact</em> top 10?</strong></p>
     <p><strong>What if finding 9 out of 10 true best matches is acceptable?</strong></p>
     <div class="fragment">
@@ -484,7 +484,7 @@ ANN search:    ███░░░░░░░░░░░░░░░░░  ~5%
     <div class="two" style="margin-top:24px">
       <div class="col figc"><img src="../../images/gifs/thank-you-bow.gif" class="gif" style="max-height:42vh"></div>
       <div class="col" style="align-items:center;gap:14px">
-        <img src="../../images/qr-repo.png" style="max-height:22vh">
+        <img src="../../images/qr-repo.png" style="max-height:36vh">
         <p class="muted" style="font-size:.86rem">Scan for the repo &amp; slides</p>
         <p>📬 <span class="blue">hello@noobj.me</span></p>
         <p>🌐 <span class="blue">noobj.me</span></p>
