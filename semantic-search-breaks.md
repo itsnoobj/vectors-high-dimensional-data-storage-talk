@@ -1,9 +1,25 @@
 ---
 options:
   implicit_slide_ends: true
+theme:
+  override:
+    footer:
+      style: template
+      left: "Jeevan | Entain"
+      right: "{current_slide} / {total_slides}"
 ---
 
 ![](images/title-slide.png)
+
+<!-- end_slide -->
+
+# What Is Semantic Search in RAG?
+
+**User asks a question → find relevant docs → LLM answers with context.**
+
+The "find relevant docs" step is **semantic search** — matching meaning, not keywords.
+
+<span style="color: #6c7086">*This talk: what breaks in that search step at scale, and how to fix it.*</span>
 
 <!-- end_slide -->
 
@@ -96,6 +112,40 @@ Month 10: "Maybe we need a separate vector DB?"
 
 <!-- end_slide -->
 
+# 💻 Demo: Two Sentences → Numbers → Similarity
+
+```bash
+python scripts/compare.py
+```
+
+<!-- pause -->
+
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+<span style="color: #a6e3a1">**Same meaning, no shared words → high %**</span>
+
+`"cancel my subscription"`
+vs
+`"I want to unsubscribe"`
+
+<!-- column: 1 -->
+
+<span style="color: #f38ba8">**Same word, different meaning → low %**</span>
+
+`"book a flight to Tokyo"`
+vs
+`"this is a great book to read"`
+
+<!-- reset_layout -->
+
+<!-- pause -->
+
+<span style="color: #f9e2af">384 dims per sentence. That's what costs 920 GB at scale.</span>
+
+<!-- end_slide -->
+
 # How Do Computers Compare Text?
 
 <!-- column_layout: [2, 1] -->
@@ -128,45 +178,7 @@ Month 10: "Maybe we need a separate vector DB?"
 
 <!-- pause -->
 
-🧑 Human: instantly knows these are similar.
-💻 Computer: two completely different strings.
 **That's an embedding.** A coordinate in "meaning space."
-
-<!-- end_slide -->
-
-# 💻 Demo: Two Sentences → Numbers → Similarity
-
-```bash
-python scripts/compare.py
-```
-
-<!-- pause -->
-
-<!-- column_layout: [1, 1] -->
-
-<!-- column: 0 -->
-
-<span style="color: #a6e3a1">**No shared words · same meaning → high %**</span>
-
-`"users are cancelling their subscriptions"`
-vs
-`"customer churn is rising"`
-
-<!-- column: 1 -->
-
-<span style="color: #f38ba8">**Shared word · different meaning → low %**</span>
-
-`"the bank is closed for the holiday"`
-vs
-`"the river bank was steep and muddy"`
-
-<!-- reset_layout -->
-
-<!-- pause -->
-
-**The output shows 384 dims per sentence.**
-
-<span style="color: #f9e2af">Hold that number — every vector is 384–1536 floats. That's exactly what costs 920 GB of RAM at scale.</span>
 
 <!-- end_slide -->
 
@@ -217,6 +229,10 @@ No "less than" for 1536 dimensions.
 ![image:width:75%](images/hnsw.png)
 
 **<span style="color: #4EC9B0">HNSW</span>** — multi-layer graph · ~95-99% recall · 1-5ms · <span style="color: #f38ba8">must stay in RAM</span>
+
+<!-- pause -->
+
+*Like driving Seoul → Sokcho: expressway (top layer, big hops) → regional road → local street to the door (precise).*
 
 <!-- pause -->
 
@@ -483,6 +499,12 @@ Usually one Postgres wins. Dedicated engines earn their keep only at extreme sca
 No separate service · no sync · same transaction.
 
 <span style="color: #6c7086">*BM25 = keyword ranking · RRF = Reciprocal Rank Fusion*</span>
+
+<!-- end_slide -->
+
+# &nbsp;
+
+![](images/transition-tradeoff.png)
 
 <!-- end_slide -->
 

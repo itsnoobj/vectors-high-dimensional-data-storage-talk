@@ -135,6 +135,8 @@ img.sm { max-height:82vh; }
 .fragment.visible { opacity:1; transform:translateY(0); }
 
 .footer { position:absolute; bottom:18px; left:66px; font-size:.66rem; color:var(--overlay); letter-spacing:.04em; }
+.global-footer { position:fixed; bottom:16px; right:50px; display:flex; align-items:center; gap:10px; z-index:100; font-size:.7rem; color:var(--overlay); letter-spacing:.04em; }
+.global-footer img { height:20px; opacity:.7; }
 .progress-bar { position:fixed; bottom:0; left:0; height:3px; background:linear-gradient(90deg,#2456a6,#6d3fbf); transition:width .4s ease; z-index:100; }
 .counter { position:fixed; bottom:13px; right:20px; font-size:.66rem; color:#8087a2; z-index:100; font-variant-numeric:tabular-nums; }
 
@@ -147,14 +149,27 @@ img.sm { max-height:82vh; }
 </style>
 </head>
 <body>
+<div class="global-footer">Jeevan | <img src="images/entain-logo.png" alt="Entain"></div>
 
 <!-- 1 · Title (DARK) -->
 <div class="slide dark title active">
   <span class="tag">pgvector · scale · architecture</span>
-  <div class="big">When Semantic Search Breaks:<br>RAM Walls, Silent Failures,<br>and the Architecture Decisions</div>
-  <p class="lead" style="margin-top:22px;max-width:760px;">Quantization · Filtered Search · DiskANN · <span class="yellow">When to Use What</span></p>
-  <p class="muted" style="margin-top:32px;letter-spacing:.08em;">JEEVAN · Open Source Summit Korea · August 2026</p>
+  <div class="big">When Semantic<br>Search Breaks</div>
+  <p class="lead" style="margin-top:28px;max-width:800px;font-size:1.3rem;opacity:.8;">RAM Walls · Silent Failures · Architecture Decisions</p>
+  <p class="lead" style="margin-top:14px;max-width:760px;font-size:.95rem;">Quantization · Filtered Search · DiskANN · <span class="yellow">When to Use What</span></p>
+  <p class="muted" style="margin-top:36px;letter-spacing:.08em;">JEEVAN · Open Source Summit Korea · August 2026</p>
   <div class="footer">← / → navigate · <span class="blue">f</span> fullscreen</div>
+</div>
+
+<!-- 1b · What is RAG (brief) -->
+<div class="slide">
+  <h1>What Is Semantic Search in RAG?</h1>
+  <div class="content" style="justify-content:center;align-items:center;text-align:center;gap:1.5rem">
+    <p style="font-size:1.3rem"><strong>User asks a question → find relevant docs → LLM answers with context.</strong></p>
+    <p style="font-size:1.1rem">The "find relevant docs" step is <span class="green"><strong>semantic search</strong></span> — matching meaning, not keywords.</p>
+    <p class="muted" style="font-size:1rem">This talk: what breaks in that search step at scale, and how to fix it.</p>
+  </div>
+  <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
 <!-- 2 · RAG decisions -->
@@ -196,7 +211,7 @@ Month 8:  "Enterprise rollout"
 Month 9:  "Add per-tenant filtering"
           → recall silently drops to 40% 🔇
 
-Month 10: "Maybe we need Pinecone?"
+Month 10: "Maybe we need a separate vector DB?"
           → now syncing two databases forever 🔄</pre>
     </div>
     <div class="col">
@@ -257,31 +272,31 @@ Month 10: "Maybe we need Pinecone?"
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
-<!-- 6b · Demo: embeddings similarity -->
+<!-- 6 · Demo: start it first (model loads while you explain) -->
 <div class="slide">
   <h1><span class="kicker">💻 Demo</span>Two Sentences → Numbers → Similarity</h1>
   <div class="content"><div class="two">
-    <div class="col">
-<pre>python scripts/compare.py</pre>
-      <p>Type two sentence pairs live and watch the similarity&nbsp;%.</p>
-      <p class="yellow fragment"><strong>Output shows 384 dims per sentence — every vector is 384–1536 floats. That's exactly what costs 920 GB of RAM at scale.</strong></p>
+    <div class="col" style="justify-content:center;gap:1.2rem">
+<pre style="font-size:1.1rem;">python scripts/compare.py</pre>
+      <p>Type two sentences → see similarity %.</p>
+      <p class="yellow fragment"><strong>384 dims per sentence. That's what costs 920 GB at scale.</strong></p>
     </div>
-    <div class="col">
+    <div class="col" style="gap:1rem">
       <div class="card">
-        <p class="green" style="font-weight:700;">No shared words · same meaning → high %</p>
-        <p><code>"users are cancelling their subscriptions"</code></p>
-        <p class="muted">vs</p>
-        <p><code>"customer churn is rising"</code></p>
+        <p class="green" style="font-weight:700;">Same meaning, no shared words → high %</p>
+        <p><code>"cancel my subscription"</code> vs <code>"I want to unsubscribe"</code></p>
       </div>
       <div class="card">
-        <p class="red" style="font-weight:700;">Shared word · different meaning → low %</p>
-        <p><code>"the bank is closed for the holiday"</code></p>
-        <p class="muted">vs</p>
-        <p><code>"the river bank was steep and muddy"</code></p>
+        <p class="red" style="font-weight:700;">Same word, different meaning → low %</p>
+        <p><code>"book a flight to Tokyo"</code> vs <code>"this is a great book"</code></p>
       </div>
     </div>
   </div></div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
+</div>
+
+<!-- 6b · How computers compare text (explain while model loads) -->
+<div class="slide">
 </div>
 
 <!-- Q · transition -->
@@ -320,6 +335,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
     <div class="figc"><div class="figure lg"><img class="lg" src="images/hnsw.png" alt="HNSW graph"></div></div>
     <div class="col" style="flex:0 0 auto;text-align:center;margin-top:.2rem">
       <p><span class="teal" style="font-weight:700">HNSW</span> — multi-layer graph · ~95–99% recall · 1–5ms · <span class="red">must stay in RAM</span></p>
+      <p class="muted fragment"><em>Like driving Seoul → Sokcho: Gyeongbu Expressway (top layer, big hops) → regional road (mid layer) → local street to the door (bottom layer, precise).</em></p>
     </div>
   </div>
   <p class="cap fragment">ANN = Approximate Nearest Neighbor · HNSW = Hierarchical Navigable Small World</p>
@@ -335,10 +351,10 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <div class="slide dark">
   <h1>The RAM Wall</h1>
   <div class="content"><div class="two g21">
-    <div class="col">
+    <div class="col" style="align-items:center;">
       <p>Everyone wants AI on their own data.<br><span class="red">Leadership wants to know why the bill just tripled.</span></p>
 <pre>Per vector:  1536 dims × 4 bytes ≈ 6 KB</pre>
-      <table>
+      <table style="margin:0 auto;">
         <thead><tr><th>Scale</th><th>Raw</th><th>+ HNSW</th><th>RAM Cost</th></tr></thead>
         <tbody>
           <tr><td>1M</td><td>6 GB</td><td>~9 GB</td><td>~$50/mo</td></tr>
@@ -362,7 +378,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
     <div class="col">
       <p><strong>Three patterns teams fall into:</strong></p>
       <div class="fragment"><p><strong>1. <span class="red">"Just use HNSW"</span></strong> — 80M vectors = 750 GB RAM → ~$5K/mo + OOM firefighting</p></div>
-      <div class="fragment"><p><strong>2. <span class="red">"Add Pinecone too"</span></strong> — two systems to sync, stale vectors → +$2K/mo + sync bugs</p></div>
+      <div class="fragment"><p><strong>2. <span class="red">"Add a separate vector DB too"</span></strong> — two systems to sync, stale vectors → +$2K/mo + sync bugs</p></div>
       <div class="fragment"><p><strong>3. <span class="red">"Optimize later"</span></strong> — rebuild at 50M = 3 days → 1–2 week production freeze</p></div>
       <div class="fragment"><p class="yellow"><strong>Not bad tools — premature decisions made without doing the math.</strong></p></div>
     </div>
@@ -384,7 +400,10 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 12 · Lever 1 -->
 <div class="slide">
   <h1><span class="kicker">Lever 1 · Reduce Dimensions</span>Matryoshka Embeddings (MRL)</h1>
-  <div class="content"><div class="figc"><div class="figure lg"><img class="lg" src="images/matryoshka-visual.png" alt="matryoshka embeddings"></div></div></div>
+  <div class="content"><div class="two">
+    <div class="figc"><img class="photo" style="max-height:70vh;" src="images/matryoshka-dolls-real.jpg" alt="matryoshka dolls"></div>
+    <div class="figc"><div class="figure lg"><img class="lg" src="images/matryoshka-visual.png" alt="matryoshka embeddings"></div></div>
+  </div></div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
@@ -530,7 +549,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 21 · recall drift (DARK) -->
 <div class="slide dark">
   <h1><span class="kicker">Silent Failure #2</span>Recall Drift</h1>
-  <div class="content" style="gap:26px;justify-content:space-evenly;">
+  <div class="content" style="gap:26px;justify-content:space-evenly;align-items:stretch;">
     <p class="lead"><strong>#1 returns zero results. #2 returns the WRONG results.</strong></p>
     <div class="fragment">
       <table class="tbl-lg">
@@ -592,9 +611,9 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 25 · data sync tax -->
 <div class="slide">
   <h1>The Data Sync Tax</h1>
-  <div class="content"><div class="two">
+  <div class="content" style="justify-content:center;"><div class="two" style="align-items:center;">
     <div class="figc"><div class="figure lg"><img class="lg" src="images/data-sync-tax.png" alt="data sync tax"></div></div>
-    <div class="col">
+    <div class="col" style="justify-content:center;gap:1rem;">
       <p><strong>Two systems = two sources of truth.</strong></p>
       <p class="red">Sync lag → stale vectors → silently wrong results.</p>
       <p class="red">Double the infra cost. Double the on-call surface.</p>
@@ -640,6 +659,11 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
+<!-- Q · transition -->
+<div class="slide dark title">
+  <div class="big">How do you make<br>the right trade-off?</div>
+</div>
+
 <!-- 28 · tradeoff -->
 <div class="slide">
   <h1>The Trade-off Mental Model</h1>
@@ -650,7 +674,9 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 29 · decision matrix -->
 <div class="slide">
   <h1>Decision Matrix</h1>
-  <div class="content"><div class="figc"><div class="figure lg"><img class="lg" src="images/decision-matrix.png" alt="decision matrix"></div></div></div>
+  <div class="content">
+    <div class="figc" style="flex:1 1 auto;"><div class="figure lg"><img class="lg" src="images/decision-matrix.png" alt="decision matrix" style="max-height:85vh;"></div></div>
+  </div>
   <div class="footer">Storing High-Dimensional Data at Scale</div>
 </div>
 
@@ -659,7 +685,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
   <h1>The End</h1>
   <div class="content"><div class="two g21">
     <div class="col" style="gap:22px;">
-      <p class="lead"><strong>Remember Month 10?</strong> <em class="muted">"Maybe we need Pinecone?"</em></p>
+      <p class="lead"><strong>Remember Month 10?</strong> <em class="muted">"Maybe we need a separate vector DB?"</em></p>
       <p class="green" style="font-size:1.2rem;"><strong>The rewrite:</strong></p>
       <div class="fragment" style="background:#11111b;border:1px solid #313244;border-left:4px solid var(--green);border-radius:12px;padding:22px 26px;display:flex;flex-direction:column;gap:16px;font-size:1.1rem;">
         <p><span class="green">✅</span> &nbsp;Compressed index — <strong>RAM bill cut 25×</strong></p>
