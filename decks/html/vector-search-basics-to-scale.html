@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Search: Basics to Scale</title>
+<style>
+:root{--text:#1c2333;--subtext:#465066;--overlay:#7b839a;--border:#e4e8f2;--card:#f4f6fc;--surface:#e9edf8;--row:#f6f8fd;--code-bg:#f5f8fd;--code-border:#e0e6f2;--blue:#2456a6;--green:#1f7a4d;--red:#c62f42;--yellow:#9a7410;--teal:#0c6f7a;--mauve:#6d3fbf;--peach:#b5561f;--callout:#eef3fb;--callout-warn:#fdeef0;--callout-ok:#ecf7f0;--figbg:#1a1a2e}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0e1020;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:var(--text);overflow:hidden;height:100vh}
+.slide{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:40px 66px 52px;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .28s ease;background:linear-gradient(180deg,#fff 0%,#eef2fa 100%)}
+.slide.active{opacity:1;pointer-events:auto}
+.slide.dark{--text:#cdd6f4;--subtext:#a6adc8;--overlay:#7d84a0;--border:#313244;--card:#252539;--surface:#313244;--row:rgba(49,50,68,.35);--code-bg:#11111b;--code-border:#313244;--blue:#89b4fa;--green:#a6e3a1;--red:#f38ba8;--yellow:#f9e2af;--teal:#94e2d5;--mauve:#cba6f7;--peach:#fab387;--callout:rgba(137,180,250,.10);--callout-warn:rgba(243,139,168,.10);--callout-ok:rgba(166,227,161,.10);background:radial-gradient(ellipse at 25% 0%,#24243c 0%,#1e1e2e 55%,#181825 100%);color:var(--text)}
+h1{flex:0 0 auto;font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.2;margin-bottom:18px;max-width:92%}
+h1 .kicker{display:block;font-size:.76rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1::after{content:'';display:block;width:52px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--mauve));margin-top:14px}
+.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:18px;overflow:hidden;font-size:1.1rem;line-height:1.58;color:var(--subtext);padding-top:10px}
+.content p{margin:0}
+.content strong{color:var(--text);font-weight:700}
+.lead{font-size:1.12rem;color:var(--text)}
+ul{list-style:none;padding:0;margin:4px 0}
+ul li{padding:4px 0 4px 20px;position:relative}
+ul li::before{content:'▸';position:absolute;left:0;color:var(--blue);font-size:.85rem;top:5px}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}.blue{color:var(--blue)}.teal{color:var(--teal)}.muted{color:var(--overlay)}.mauve{color:var(--mauve)}.peach{color:var(--peach)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-left:3px solid var(--blue);border-radius:8px;padding:14px 18px;font-family:'JetBrains Mono','SF Mono',Menlo,monospace;font-size:.8rem;line-height:1.5;color:var(--text);overflow:auto}
+code{font-family:'JetBrains Mono','SF Mono',Menlo,monospace}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th{background:var(--surface);color:var(--text);padding:11px 14px;text-align:left;font-weight:600;font-size:.78rem;letter-spacing:.02em;border-bottom:2px solid var(--blue)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--subtext)}
+tr:nth-child(even) td{background:var(--row)}
+.tbl-lg{font-size:1.16rem}.tbl-lg th{font-size:.95rem;padding:16px 20px}.tbl-lg td{padding:16px 20px}
+.figc{display:flex;align-items:center;justify-content:center;min-height:0}
+.content>.figc{flex:1 1 auto}
+.col>.figc{flex:1 1 auto}
+.figc>img{width:100%;height:100%;object-fit:contain}
+.figure{display:inline-flex;align-items:center;justify-content:center;background:var(--figbg);border-radius:14px;padding:16px;max-width:100%;max-height:100%;box-shadow:0 14px 44px rgba(18,22,48,.16)}
+.figure img{display:block;max-width:100%;max-height:100%;border-radius:6px}
+.photo{display:block;max-width:100%;max-height:100%;border-radius:14px;margin:0 auto;box-shadow:0 12px 34px rgba(18,22,48,.16);border:1px solid var(--border)}
+.gif{display:block;max-width:100%;max-height:100%;border-radius:12px;margin:0 auto;box-shadow:0 12px 34px rgba(0,0,0,.28)}
+img.lg,.figure.lg,.figure.lg img{max-height:88vh}
+img.md,.figure.md,.figure.md img{max-height:82vh}
+img.sm{max-height:82vh}
+.cap{text-align:center;color:var(--overlay);font-size:.86rem;flex:0 0 auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch;min-height:0}
+.content>.two{flex:1 1 auto}
+.two .figure img,.two img.lg{max-height:80vh}
+.g21{grid-template-columns:2fr 1fr}
+.g32{grid-template-columns:3fr 2fr}
+.g23{grid-template-columns:2fr 3fr}
+.g13{grid-template-columns:1fr 3fr}
+.col{min-width:0;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.col img{align-self:center}
+.gif-row{display:flex;gap:16px;justify-content:center;align-items:center}
+.gif-row img{height:28vh;border-radius:10px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px}
+.slide.dark .card{border-color:transparent}
+.callout{border-left:3px solid var(--blue);padding:11px 18px;margin:2px 0;background:var(--callout);border-radius:0 8px 8px 0;font-weight:500;color:var(--text)}
+.callout.warn{border-left-color:var(--red);background:var(--callout-warn)}
+.callout.ok{border-left-color:var(--green);background:var(--callout-ok)}
+.center{align-items:center;text-align:center}
+.big{font-size:3.1rem;font-weight:800;line-height:1.08;letter-spacing:-.03em}
+.title{justify-content:center;align-items:center;text-align:center}
+.title h1::after{display:none}
+.title .big{background:linear-gradient(90deg,#cdd6f4,#89b4fa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--overlay);border:1px solid var(--surface);border-radius:999px;padding:5px 14px;margin-bottom:22px}
+.fragment{opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease}
+.fragment.visible{opacity:1;transform:translateY(0)}
+.footer{position:absolute;bottom:18px;left:66px;font-size:.66rem;color:var(--overlay);letter-spacing:.04em}
+.global-footer{position:fixed;bottom:16px;right:50px;display:flex;align-items:center;gap:10px;z-index:100;font-size:.7rem;color:var(--overlay);letter-spacing:.04em}
+.progress-bar{position:fixed;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#2456a6,#6d3fbf);transition:width .4s ease;z-index:100}
+.counter{position:fixed;bottom:13px;right:20px;font-size:.66rem;color:#8087a2;z-index:100;font-variant-numeric:tabular-nums}
+@media(max-height:820px){.slide{padding:28px 50px 46px}h1{font-size:1.6rem;margin-bottom:12px}.content{font-size:.92rem;gap:10px}img.lg,.figure.lg,.figure.lg img{max-height:54vh}}
+</style>
+</head>
+<body>
+
+<!-- 1. Title -->
+<div class="slide dark title active">
+  <div class="figc"><img src="../../images/title-slide.png" class="lg"></div>
+</div>
+
+<!-- 2. What Is RAG? -->
+<div class="slide dark center">
+  <h1>What Is RAG?</h1>
+  <div class="content"><div class="figc"><img src="../../images/rag-what-is.png" class="lg"></div></div>
+</div>
+
+<!-- 3. A RAG System -->
+<div class="slide dark center">
+  <h1>A RAG System: Every Box Is a Decision</h1>
+  <div class="content"><div class="figc"><img src="../../images/rag-architecture-decisions.png" class="lg"></div></div>
+</div>
+
+<!-- 4. The Scaling Path -->
+<div class="slide dark">
+  <h1>The Scaling Path</h1>
+  <div class="content">
+    <div class="figc"><img src="../../images/scaling-path.png" class="md" style="max-height:40vh"></div>
+    <div class="gif-row">
+      <img src="../../images/gifs/ship-it.gif">
+      <img src="../../images/gifs/sweating.gif">
+      <img src="../../images/gifs/money-burning.gif">
+      <img src="../../images/gifs/everything-fine-fire.gif">
+    </div>
+  </div>
+</div>
+
+<!-- 5. Why This Talk, Why Now -->
+<div class="slide dark">
+  <h1>Why This Talk, Why Now</h1>
+  <div class="content">
+    <div class="two g23">
+      <div class="col">
+<pre>Month 1:  "Let's add semantic search!"
+          → 100K vectors, works great ✅
+
+Month 4:  "Scale to all our docs"
+          → 10M vectors, still fine ✅
+
+Month 8:  "Enterprise rollout"
+          → 100M vectors, RAM bill explodes 💸
+
+Month 9:  "Add per-tenant filtering"
+          → recall silently drops to 40% 🔇
+
+Month 10: "Maybe we need a separate vector DB?"
+          → now syncing two databases forever 🔄</pre>
+        <p><strong>Same pattern. Same order. Every team.</strong></p>
+        <p class="yellow">This talk: the math, the tools, and the decisions — in plain English.</p>
+      </div>
+      <div class="col"><img src="../../images/gifs/flipping-papers.gif" class="gif" style="max-height:70vh"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. What We'll Cover -->
+<div class="slide">
+  <h1>What We'll Cover</h1>
+  <div class="content">
+    <div class="two">
+      <div class="col">
+        <h2 style="font-size:1.2rem;color:var(--blue)">First Principles</h2>
+        <p><em>Embeddings, distance, why approximate works</em></p>
+        <h2 style="font-size:1.2rem;color:var(--blue);margin-top:20px">The RAM Wall</h2>
+        <p><em>Where scale breaks and what to do</em></p>
+        <h2 style="font-size:1.2rem;color:var(--blue);margin-top:20px">Three Compression Levers</h2>
+        <p><em>Dimensions → Bits → Disk</em></p>
+      </div>
+      <div class="col">
+        <h2 style="font-size:1.2rem;color:var(--blue)">Silent Failures</h2>
+        <p><em>Filtered search + recall drift</em></p>
+        <h2 style="font-size:1.2rem;color:var(--blue);margin-top:20px">Architecture Decisions</h2>
+        <p><em>Benchmarks, trade-offs, decision matrix</em></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. Demo: Similarity -->
+<div class="slide dark">
+  <h1><span class="kicker">Demo</span>Two Sentences → Numbers → Similarity</h1>
+  <div class="content" style="justify-content:space-evenly">
+    <div class="two">
+      <div class="col" style="gap:16px">
+        <h2 style="font-size:1.3rem" class="green">✅ High Similarity</h2>
+        <p style="font-size:1.1rem"><em>Same meaning, no shared words</em></p>
+        <p style="font-size:1.15rem"><code>"cancel my subscription"</code></p>
+        <p style="font-size:1.15rem"><code>"I want to unsubscribe"</code></p>
+        <p class="fragment" style="font-size:1.4rem"><strong>→ ~68%</strong></p>
+      </div>
+      <div class="col" style="gap:16px">
+        <h2 style="font-size:1.3rem" class="red">❌ Low Similarity</h2>
+        <p style="font-size:1.1rem"><em>Same word, different meaning</em></p>
+        <p style="font-size:1.15rem"><code>"the bank is closed for the holiday"</code></p>
+        <p style="font-size:1.15rem"><code>"the river bank was steep and muddy"</code></p>
+        <p class="fragment" style="font-size:1.4rem"><strong>→ ~26%</strong></p>
+      </div>
+    </div>
+    <p class="fragment yellow" style="text-align:center;font-size:1.2rem">384 dimensions per sentence. That's what costs 920 GB at scale.</p>
+  </div>
+</div>
+
+<!-- 8. How Do Computers Compare Text? -->
+<div class="slide">
+  <h1>How Do Computers Compare Text?</h1>
+  <div class="content">
+    <div class="two g21">
+      <div class="col">
+        <p><strong>Computers don't understand words.</strong></p>
+<pre>"I love fries"   vs   "Fries are great"</pre>
+        <p>🧑 Human → instantly similar.<br>💻 Computer → two different strings.</p>
+        <div class="fragment">
+          <p><strong>The fix: turn text into numbers that capture meaning.</strong></p>
+<pre>"I love fries"     → [0.2, 0.8, 0.1, ...] 384 numbers
+"Fries are great"  → [0.3, 0.7, 0.2, ...] 384 numbers
+"The sky is blue"  → [0.9, 0.1, 0.8, ...] 384 numbers</pre>
+          <p class="green">Similar meanings → similar numbers.</p>
+        </div>
+        <p class="fragment"><strong>That's an embedding.</strong> A GPS coordinate for meaning — close meanings, close numbers.</p>
+      </div>
+      <div class="col figc"><img src="../../images/gifs/mind-blown.gif" class="gif" style="max-height:45vh"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 9. How Do We Measure Close? -->
+<div class="slide">
+  <h1>How Do We Measure "Close"?</h1>
+  <div class="content">
+    <div class="two g32">
+      <div class="col">
+        <p><strong>Distance between two points — already familiar:</strong></p>
+<pre>Point A = (x₁, y₁)    Point B = (x₂, y₂)
+
+Distance = √((x₂-x₁)² + (y₂-y₁)²)</pre>
+      </div>
+      <div class="col figc"><img src="../../images/dist-2-points.png" class="photo" style="max-height:42vh"></div>
+    </div>
+    <div class="fragment">
+      <p><strong>Same idea, just more dimensions:</strong></p>
+<pre>Vector A = [0.2, 0.8, 0.1, ... 384 nums]
+Vector B = [0.3, 0.7, 0.2, ... 384 nums]
+
+Distance = √((0.3-0.2)² + (0.7-0.8)² + ...)</pre>
+      <p>That's Euclidean distance. Works, but…</p>
+    </div>
+  </div>
+</div>
+
+<!-- 10. Transition: Sort Order -->
+<div class="slide dark center">
+  <div class="content"><div class="figc"><img src="../../images/transition-sort-order.png" class="lg"></div></div>
+</div>
+
+<!-- 11. Why Vector Indexing Is Different -->
+<div class="slide">
+  <h1>Why Vector Indexing Is Different</h1>
+  <div class="content">
+    <div class="two">
+      <div class="col">
+        <p><strong>B-tree:</strong> exact ordering, binary search, O(log n)</p>
+        <div class="figc"><img src="../../images/btree.png" class="photo" style="max-height:55vh"></div>
+      </div>
+      <div class="col">
+        <p><strong>Vector indexes</strong> have no natural sort order.</p>
+<pre style="font-size:.75rem">A = [0.21, 0.87, 0.14, ..., 0.53]
+B = [0.93, 0.12, 0.38, ..., 0.71]
+C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
+        <div class="figc"><img src="../../images/gifs/exact-search-slow.png" style="max-height:30vh"></div>
+      </div>
+    </div>
+    <p class="fragment" style="margin-top:12px">No "less than" for 384 dimensions. <strong>Exact search = check every vector</strong> — too slow at scale.</p>
+  </div>
+</div>
+
+<!-- 12. Approximate Is Good Enough -->
+<div class="slide dark">
+  <h1>The Key Insight: <span class="green">Approximate Is Good Enough</span></h1>
+  <div class="content" style="justify-content:space-evenly">
+    <p><strong>What if we don't need the <em>exact</em> top 10?</strong></p>
+    <p><strong>What if finding 9 out of 10 true best matches is acceptable?</strong></p>
+    <div class="fragment">
+      <p>This is <span class="green"><strong>Approximate Nearest Neighbor (ANN)</strong></span> search.</p>
+<pre>Exact search:  ████████████████████ 100% scanned → 100% accurate → 🐌 Slow
+ANN search:    ███░░░░░░░░░░░░░░░░░  ~5% scanned → ~95-99% accurate → ⚡ Fast!</pre>
+    </div>
+    <div class="fragment">
+      <p><strong>Analogy:</strong> 📦 Finding a delivery address in Seoul</p>
+      <ul>
+        <li><strong>Exact search:</strong> Check every building in every street → hours 🐌</li>
+        <li><strong>With postal code:</strong> Go to the right 구(gu), check nearby blocks → minutes ⚡</li>
+        <li class="red"><strong>The catch:</strong> Might miss a building right on the border</li>
+      </ul>
+    </div>
+    <p class="fragment yellow">This trade-off — 95% accuracy at 100x speed — is what makes vector search viable.</p>
+  </div>
+</div>
+
+<!-- 13. How ANN Indexes Work -->
+<div class="slide">
+  <h1><span class="kicker">Approximate Nearest Neighbor</span>How ANN Indexes Work</h1>
+  <div class="content">
+    <p><strong>Close enough — without checking every vector.</strong></p>
+    <div class="figc"><img src="../../images/hnsw.png" class="figure lg" style="max-height:58vh"></div>
+    <p><strong><span class="teal">HNSW</span></strong> — multi-layer graph · ~95-99% recall · 1-5ms · <span class="red">must stay in RAM</span></p>
+    <p class="fragment muted"><em>Like driving Seoul → Sokcho: expressway → regional road → local street.</em></p>
+  </div>
+</div>
+
+<!-- 14. Transition: RAM Wall -->
+<div class="slide dark center">
+  <div class="content"><div class="figc"><img src="../../images/transition-ram-wall.png" class="lg"></div></div>
+</div>
+
+<!-- 15. The RAM Wall -->
+<div class="slide dark">
+  <h1>The RAM Wall</h1>
+  <div class="content">
+    <p><strong>Everyone wants to build AI on their own data.</strong><br><span class="red">Leadership wants to know why the infrastructure bill just tripled.</span></p>
+    <div class="figc"><img src="../../images/gifs/this-is-fine.gif" class="gif" style="max-height:22vh"></div>
+<pre>Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB</pre>
+    <p class="muted" style="font-size:.85rem"><em>Demo used 384d (MiniLM). Production models (OpenAI, Cohere) use 1536d. This is production math.</em></p>
+    <table>
+      <tr><th>Scale</th><th>Raw Vectors</th><th>+ HNSW (50%)</th><th>Approx. RAM Cost</th></tr>
+      <tr><td>1M</td><td>6 GB</td><td>~9 GB</td><td>~$50/mo</td></tr>
+      <tr><td>10M</td><td>61 GB</td><td>~92 GB</td><td>~$500/mo</td></tr>
+      <tr><td>100M</td><td>614 GB</td><td>~920 GB</td><td>~$5,000+/mo</td></tr>
+      <tr><td>1B</td><td>6.1 TB</td><td>~9.2 TB</td><td>💀</td></tr>
+    </table>
+    <p class="fragment red">64 GB → 920 GB = not 15x cost, it's 30-50x operational complexity.</p>
+  </div>
+</div>
+
+<!-- 16. The Cost of Getting It Wrong -->
+<div class="slide dark">
+  <h1>The Cost of Getting It Wrong</h1>
+  <div class="content">
+    <div class="figc"><img src="../../images/gifs/interstellar.gif" class="gif" style="max-height:28vh"></div>
+    <p class="fragment"><strong>1.</strong> "Just use HNSW" → 750 GB RAM → $5K/mo 💸</p>
+    <p class="fragment"><strong>2.</strong> "Add a separate vector DB" → two systems to sync forever 🔄</p>
+    <p class="fragment"><strong>3.</strong> "We'll optimize later" → index rebuild = 3 days, no deploys 🧊</p>
+    <p class="fragment yellow">Not bad tools — premature decisions made without doing the math.</p>
+  </div>
+</div>
+
+<!-- 17. Three Ways Through the Wall -->
+<div class="slide">
+  <h1>Three Ways Through the Wall</h1>
+  <div class="content">
+    <div class="figc"><img src="../../images/three-levers.png" class="figure lg" style="max-height:60vh"></div>
+    <p class="green"><strong>920 GB → 5 GB compressed index. Full vectors stay on SSD for re-rank.</strong></p>
+    <p class="fragment muted"><em>(Do them in order: dimensions first, then bits, then disk.)</em></p>
+  </div>
+</div>
+
+<!-- 18. Matryoshka Dolls Photo -->
+<div class="slide center">
+  <h1><span class="kicker">Lever 1 · Reduce Dimensions</span>Matryoshka Embeddings</h1>
+  <div class="content">
+    <div class="figc"><img src="../../images/matryoshka-dolls.jpg" class="photo" style="max-height:60vh"></div>
+    <p><strong>Same doll, fewer layers — still recognizable.</strong><br>Same embedding, fewer dimensions — still useful.</p>
+  </div>
+</div>
+
+<!-- 19. MRL Technical -->
+<div class="slide">
+  <h1><span class="kicker">Lever 1 · Reduce Dimensions</span>Matryoshka Embeddings (MRL)</h1>
+  <div class="content"><div class="figc"><img src="../../images/matryoshka-visual.png" class="figure lg"></div></div>
+</div>
+
+<!-- 20. Quantization -->
+<div class="slide">
+  <h1><span class="kicker">Lever 2 · Reduce Bits</span>Quantization</h1>
+  <div class="content">
+    <div class="two">
+      <div class="col figc"><img src="../../images/quantization-search-rerank.png" style="max-height:78vh;border-radius:12px"></div>
+      <div class="col figc"><img src="../../images/quantization-lite.png" class="figure" style="max-height:78vh"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 21. Quantization Details -->
+<div class="slide">
+  <h1><span class="kicker">Lever 2 · Reduce Bits</span>Quantization — The Details</h1>
+  <div class="content"><div class="figc"><img src="../../images/quantization-blocks.png" class="figure lg"></div></div>
+</div>
+
+<!-- 22. Demo: Quantization -->
+<div class="slide dark">
+  <h1><span class="kicker">Demo</span>Quantization in Action</h1>
+  <div class="content" style="align-items:center">
+    <div class="figc"><img src="../../images/gifs/measuring.gif" class="gif" style="max-height:28vh"></div>
+    <table class="fragment" style="max-width:600px">
+      <tr><th>Method</th><th>Size (1M)</th><th>Recall@10</th></tr>
+      <tr><td>FP32 (baseline)</td><td>6.1 GB</td><td>100%</td></tr>
+      <tr><td>Binary (1-bit)</td><td>192 MB</td><td>~10%</td></tr>
+      <tr><td>Binary + rerank</td><td>192 MB</td><td>~92-96%</td></tr>
+    </table>
+    <p class="fragment green"><strong>32× smaller. Still finds the right answers.</strong></p>
+    <p class="fragment muted" style="font-size:.85rem"><em>Recall is optimistic at small scale. At 1M+ vectors, expect ~92-96% with rerank.</em></p>
+  </div>
+</div>
+
+<!-- 23. DiskANN -->
+<div class="slide">
+  <h1><span class="kicker">Lever 3 · Move to Disk</span>DiskANN — Six Degrees of Separation</h1>
+  <div class="content">
+    <div class="two g13">
+      <div class="col" style="gap:14px">
+        <div class="figc"><img src="../../images/earth-drawing.jpg" class="photo" style="max-height:25vh"></div>
+        <p><strong>8 billion people on Earth.</strong><br><strong>Any two connected by just 6 hops.</strong></p>
+      </div>
+      <div class="col figc"><img src="../../images/degrees-of-separation.png" class="figure" style="max-height:68vh"></div>
+    </div>
+    <p class="fragment green"><strong>DiskANN uses the same idea: build a graph where any vector is ~6 hops from any other. Keep the graph in RAM, keep the actual vectors on SSD.</strong></p>
+  </div>
+</div>
+
+<!-- 24. DiskANN Architecture -->
+<div class="slide dark center">
+  <h1>DiskANN: The Architecture</h1>
+  <div class="content"><div class="figc"><img src="../../images/diskann-query-flow.png" class="figure lg"></div></div>
+</div>
+
+<!-- 25. Transition: Silent Failures -->
+<div class="slide dark center">
+  <div class="content"><div class="figc"><img src="../../images/transition-silent-failures.png" class="lg"></div></div>
+</div>
+
+<!-- 26. Filtered Search -->
+<div class="slide dark">
+  <h1><span class="kicker">Silent Failure #1</span>Filtered Search</h1>
+  <div class="content">
+    <div class="two g23">
+      <div class="col">
+<pre><span style="color:#cba6f7">SELECT</span> * <span style="color:#cba6f7">FROM</span> products
+<span style="color:#cba6f7">WHERE</span> tenant_id = 42
+<span style="color:#cba6f7">ORDER BY</span> embedding &lt;=&gt; query <span style="color:#cba6f7">LIMIT</span> 10;</pre>
+        <div class="fragment">
+          <p><strong>⚠️ HNSW returns 10 nearest vectors.</strong><br><strong>Filter throws 9 away.</strong></p>
+          <p>Asked for 10. Got 0.</p>
+          <p class="red"><strong>No error. No warning. No log line.</strong></p>
+        </div>
+      </div>
+      <div class="col figc"><img src="../../images/gifs/where.gif" class="gif" style="max-height:60vh"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 27. Pre vs Post Filter -->
+<div class="slide dark center">
+  <h1>Pre-Filter vs Post-Filter: Both Fail</h1>
+  <div class="content"><div class="figc"><img src="../../images/filtered-search-problem-horizontal.png" class="figure lg"></div></div>
+</div>
+
+<!-- 28. Recall Drift -->
+<div class="slide dark">
+  <h1><span class="kicker">Silent Failure #2</span>Recall Drift</h1>
+  <div class="content">
+    <div class="two g32">
+      <div class="col">
+        <p><strong>#1 returns zero results. #2 returns the WRONG results.</strong></p>
+<pre class="fragment">Recall@10
+ 100% │ ●━━━●
+      │       ╲
+  90% │         ╲
+      │           ╲
+  80% │             ╲
+      │               ╲
+  70% │                 ╲
+      │                   ╲
+  60% │                     ● ← nobody noticed
+      │
+      └──────────────────────────
+       Month 1   4     6     9</pre>
+      </div>
+      <div class="col figc"><img src="../../images/gifs/squid-game-red-light.gif" class="gif" style="max-height:55vh"></div>
+    </div>
+    <div class="fragment">
+      <p>No error. No alert. No log line.</p>
+      <p class="red"><strong>The system doesn't crash. It just quietly becomes useless.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- 29. Detecting Drift -->
+<div class="slide">
+  <h1>Detecting Drift: Two Flows</h1>
+  <div class="content"><div class="figc"><img src="../../images/recall-drift-detection.png" class="figure lg"></div></div>
+</div>
+
+<!-- 30. Decision Matrix -->
+<div class="slide">
+  <h1>Decision Matrix</h1>
+  <div class="content"><div class="figc"><img src="../../images/decision-matrix.png" class="figure lg"></div></div>
+</div>
+
+<!-- 31. The End -->
+<div class="slide dark">
+  <h1>The End</h1>
+  <div class="content">
+    <p class="yellow" style="font-size:1.2rem"><strong>Remember Month 10? You don't have to get there.</strong></p>
+    <p>Do the math early. Pick compression before it's urgent. Monitor recall always.</p>
+    <div class="two" style="margin-top:24px">
+      <div class="col figc"><img src="../../images/gifs/thank-you-bow.gif" class="gif" style="max-height:42vh"></div>
+      <div class="col" style="align-items:center;gap:14px">
+        <img src="../../images/qr-repo.png" style="max-height:36vh">
+        <p class="muted" style="font-size:.86rem">Scan for the repo &amp; slides</p>
+        <p>📬 <span class="blue">hello@noobj.me</span></p>
+        <p>🌐 <span class="blue">noobj.me</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-bar" id="progress"></div>
+<div class="counter" id="counter"></div>
+
+<script>
+(function(){
+  const slides=document.querySelectorAll('.slide');const total=slides.length;let current=0;
+  function showSlide(n,revealAll){slides[current].classList.remove('active');current=Math.max(0,Math.min(n,total-1));slides[current].classList.add('active');slides[current].querySelectorAll('.fragment').forEach(f=>revealAll?f.classList.add('visible'):f.classList.remove('visible'));updateUI();history.replaceState(null,'','#'+(current+1));}
+  function nextStep(){const f=slides[current].querySelectorAll('.fragment:not(.visible)');if(f.length){f[0].classList.add('visible');return;}if(current<total-1)showSlide(current+1,false);}
+  function prevStep(){const f=slides[current].querySelectorAll('.fragment.visible');if(f.length){f[f.length-1].classList.remove('visible');return;}if(current>0)showSlide(current-1,true);}
+  function updateUI(){document.getElementById('progress').style.width=((current+1)/total*100)+'%';document.getElementById('counter').textContent=(current+1)+' / '+total;}
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();nextStep();}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prevStep();}else if(e.key==='Home'){e.preventDefault();showSlide(0,false);}else if(e.key==='End'){e.preventDefault();showSlide(total-1,true);}else if(e.key==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();}else if(e.key==='Escape'){document.exitFullscreen?.();}});
+  let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50){d<0?nextStep():prevStep();}});
+  document.addEventListener('click',e=>{if(e.target.closest('a'))return;if(e.clientX>innerWidth*0.85)nextStep();else if(e.clientX<innerWidth*0.15)prevStep();});
+  const h=parseInt(location.hash.replace('#',''));if(h>0&&h<=total)showSlide(h-1,true);updateUI();
+})();
+</script>
+</body>
+</html>
