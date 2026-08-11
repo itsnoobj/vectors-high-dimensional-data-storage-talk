@@ -396,9 +396,17 @@ Same embedding, fewer dimensions — still useful.
 
 # Lever 2: Quantization
 
+<!-- column_layout: [1, 1] -->
+
+<!-- column: 0 -->
+
+![](images/quantization-search-rerank.png)
+
+<!-- column: 1 -->
+
 ![](images/quantization-lite.png)
 
-<span style="color: #6c7086">*Like browsing product thumbnails → only load HD photos for the 10 you'll actually compare. Search blurry, rank sharp.*</span>
+<!-- reset_layout -->
 
 <!-- end_slide -->
 
