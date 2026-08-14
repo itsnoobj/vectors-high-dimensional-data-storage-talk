@@ -8,14 +8,16 @@
 :root{--text:#1c2333;--subtext:#465066;--overlay:#7b839a;--border:#e4e8f2;--card:#f4f6fc;--surface:#e9edf8;--row:#f6f8fd;--code-bg:#f5f8fd;--code-border:#e0e6f2;--blue:#2456a6;--green:#1f7a4d;--red:#c62f42;--yellow:#9a7410;--teal:#0c6f7a;--mauve:#6d3fbf;--peach:#b5561f;--callout:#eef3fb;--callout-warn:#fdeef0;--callout-ok:#ecf7f0;--figbg:#1a1a2e}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0e1020;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:var(--text);overflow:hidden;height:100vh}
-.slide{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:40px 66px 52px;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .28s ease;background:linear-gradient(180deg,#fff 0%,#eef2fa 100%)}
+.slide{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-start;padding:40px 66px 52px;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .28s ease;background:linear-gradient(180deg,#fff 0%,#eef2fa 100%)}
 .slide.active{opacity:1;pointer-events:auto}
 .slide.dark{--text:#cdd6f4;--subtext:#a6adc8;--overlay:#7d84a0;--border:#313244;--card:#252539;--surface:#313244;--row:rgba(49,50,68,.35);--code-bg:#11111b;--code-border:#313244;--blue:#89b4fa;--green:#a6e3a1;--red:#f38ba8;--yellow:#f9e2af;--teal:#94e2d5;--mauve:#cba6f7;--peach:#fab387;--callout:rgba(137,180,250,.10);--callout-warn:rgba(243,139,168,.10);--callout-ok:rgba(166,227,161,.10);background:radial-gradient(ellipse at 25% 0%,#24243c 0%,#1e1e2e 55%,#181825 100%);color:var(--text)}
 h1{flex:0 0 auto;font-size:2.4rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.2;margin-bottom:20px;max-width:92%}
 h1 .kicker{display:block;font-size:.88rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
 h1::after{content:'';display:block;width:52px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--mauve));margin-top:14px}
-.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:22px;overflow:hidden;font-size:1.35rem;line-height:1.6;color:var(--subtext);padding-top:0}
-.slide.dark .content,.slide .content{justify-content:center}
+.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;gap:28px;overflow:hidden;font-size:1.35rem;line-height:1.6;color:var(--subtext);padding-top:16px}
+.center .content{justify-content:center;gap:22px;padding-top:0}
+.center .content>.figc{flex:1 1 auto}
+.center.slide{justify-content:center}
 .content p{margin:0}
 .content strong{color:var(--text);font-weight:700}
 .lead{font-size:1.12rem;color:var(--text)}
@@ -31,9 +33,9 @@ td{padding:13px 18px;border-bottom:1px solid var(--border);color:var(--subtext)}
 tr:nth-child(even) td{background:var(--row)}
 .tbl-lg{font-size:1.16rem}.tbl-lg th{font-size:.95rem;padding:16px 20px}.tbl-lg td{padding:16px 20px}
 .figc{display:flex;align-items:center;justify-content:center;min-height:0}
-.content>.figc{flex:1 1 auto}
-.col>.figc{flex:1 1 auto}
-.figc>img{width:100%;height:100%;object-fit:contain}
+.content>.figc{flex:0 1 auto}
+.col>.figc{flex:0 1 auto}
+.figc>img{max-width:100%;height:auto;object-fit:contain}
 .figure{display:inline-flex;align-items:center;justify-content:center;background:var(--figbg);border-radius:14px;padding:16px;max-width:100%;max-height:100%;box-shadow:0 14px 44px rgba(18,22,48,.16)}
 .figure img{display:block;max-width:100%;max-height:100%;border-radius:6px}
 .photo{display:block;max-width:100%;max-height:100%;border-radius:14px;margin:0 auto;box-shadow:0 12px 34px rgba(18,22,48,.16);border:1px solid var(--border)}
@@ -42,14 +44,14 @@ img.lg,.figure.lg,.figure.lg img{max-height:88vh}
 img.md,.figure.md,.figure.md img{max-height:82vh}
 img.sm{max-height:82vh}
 .cap{text-align:center;color:var(--overlay);font-size:.86rem;flex:0 0 auto}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch;min-height:0;flex:1 1 auto}
-.content>.two{flex:1 1 auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch;min-height:0}
+.content>.two{flex:0 0 auto}
 .two .figure img,.two img.lg{max-height:80vh}
 .g21{grid-template-columns:2fr 1fr}
 .g32{grid-template-columns:3fr 2fr}
 .g23{grid-template-columns:2fr 3fr}
 .g13{grid-template-columns:1fr 3fr}
-.col{min-width:0;display:flex;flex-direction:column;gap:12px;justify-content:center;flex:1 1 auto}
+.col{min-width:0;display:flex;flex-direction:column;gap:12px;justify-content:center}
 .col img{align-self:center}
 .gif-row{display:flex;gap:16px;justify-content:center;align-items:center}
 .gif-row img{height:28vh;border-radius:10px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.28)}
@@ -208,15 +210,15 @@ Month 10: "Maybe we need a separate vector DB?"
 <!-- 9. How Do We Measure Close? -->
 <div class="slide">
   <h1>How Do We Measure "Close"?</h1>
-  <div class="content">
-    <div class="two g32">
+  <div class="content" style="gap:32px">
+    <div class="two" style="gap:20px;flex:0 0 auto;align-items:center">
       <div class="col">
         <p><strong>Distance between two points — already familiar:</strong></p>
 <pre>Point A = (x₁, y₁)    Point B = (x₂, y₂)
 
 Distance = √((x₂-x₁)² + (y₂-y₁)²)</pre>
       </div>
-      <div class="col figc"><img src="../../images/dist-2-points.png" class="photo" style="max-height:42vh"></div>
+      <div class="col" style="text-align:center"><img src="../../images/dist-2-points.png" class="photo" style="max-height:42vh"></div>
     </div>
     <div class="fragment">
       <p><strong>Same idea, just more dimensions:</strong></p>
@@ -316,12 +318,14 @@ ANN search:    ███░░░░░░░░░░░░░░░░░  ~5%
 <!-- 16. The Cost of Getting It Wrong -->
 <div class="slide dark">
   <h1>The Cost of Getting It Wrong</h1>
-  <div class="content">
-    <div class="figc"><img src="../../images/gifs/interstellar.gif" class="gif" style="max-height:24vh"></div>
-    <p><strong>1.</strong> "Just use HNSW" → 750 GB RAM → $5K/mo 💸</p>
-    <p><strong>2.</strong> "Add a separate vector DB" → two systems to sync forever 🔄</p>
-    <p><strong>3.</strong> "We'll optimize later" → index rebuild = 3 days, no deploys 🧊</p>
-    <p class="yellow">Not bad tools — premature decisions made without doing the math.</p>
+  <div class="content" style="gap:28px">
+    <div style="text-align:center"><img src="../../images/gifs/interstellar.gif" class="gif" style="max-height:34vh"></div>
+    <div style="font-size:1.5rem;line-height:2.2">
+      <p><strong>1.</strong> "Just use HNSW" → 750 GB RAM → $5K/mo 💸</p>
+      <p><strong>2.</strong> "Add a separate vector DB" → two systems to sync forever 🔄</p>
+      <p><strong>3.</strong> "We'll optimize later" → index rebuild = 3 days, no deploys 🧊</p>
+    </div>
+    <p class="yellow" style="font-size:1.3rem">Not bad tools — premature decisions made without doing the math.</p>
   </div>
 </div>
 
