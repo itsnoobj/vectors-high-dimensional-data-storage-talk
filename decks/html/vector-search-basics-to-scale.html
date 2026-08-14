@@ -15,6 +15,7 @@ h1{flex:0 0 auto;font-size:2.4rem;font-weight:800;color:var(--text);letter-spaci
 h1 .kicker{display:block;font-size:.88rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
 h1::after{content:'';display:block;width:52px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--mauve));margin-top:14px}
 .content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:22px;overflow:hidden;font-size:1.35rem;line-height:1.6;color:var(--subtext);padding-top:0}
+.slide.dark .content,.slide .content{justify-content:center}
 .content p{margin:0}
 .content strong{color:var(--text);font-weight:700}
 .lead{font-size:1.12rem;color:var(--text)}
@@ -41,14 +42,14 @@ img.lg,.figure.lg,.figure.lg img{max-height:88vh}
 img.md,.figure.md,.figure.md img{max-height:82vh}
 img.sm{max-height:82vh}
 .cap{text-align:center;color:var(--overlay);font-size:.86rem;flex:0 0 auto}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch;min-height:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch;min-height:0;flex:1 1 auto}
 .content>.two{flex:1 1 auto}
 .two .figure img,.two img.lg{max-height:80vh}
 .g21{grid-template-columns:2fr 1fr}
 .g32{grid-template-columns:3fr 2fr}
 .g23{grid-template-columns:2fr 3fr}
 .g13{grid-template-columns:1fr 3fr}
-.col{min-width:0;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.col{min-width:0;display:flex;flex-direction:column;gap:12px;justify-content:center;flex:1 1 auto}
 .col img{align-self:center}
 .gif-row{display:flex;gap:16px;justify-content:center;align-items:center}
 .gif-row img{height:28vh;border-radius:10px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.28)}
@@ -129,7 +130,7 @@ Month 10: "Maybe we need a separate vector DB?"
         <p><strong>Same pattern. Same order. Every team.</strong></p>
         <p class="yellow">This talk: the math, the tools, and the decisions — in plain English.</p>
       </div>
-      <div class="col"><img src="../../images/gifs/flipping-papers.gif" class="gif" style="max-height:70vh"></div>
+      <div class="col"><img src="../../images/gifs/flipping-papers.gif" class="gif" style="max-height:80vh;width:100%;object-fit:cover"></div>
     </div>
   </div>
 </div>
