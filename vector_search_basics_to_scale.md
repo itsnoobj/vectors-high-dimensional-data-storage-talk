@@ -329,6 +329,8 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 
 <span style="color: #6c7086">*Demo used 384d (MiniLM). Production models (OpenAI, Cohere) use 1536d. This is production math.*</span>
 
+<!-- pause -->
+
 | Scale | Raw Vectors | + HNSW (50%) | Approx. RAM Cost |
 |-------|------------|-------------|-----------------|
 | 1M | 6 GB | ~9 GB | ~$50/mo |
@@ -346,19 +348,11 @@ Per vector:  1536 dims × 4 bytes = 6,144 bytes ≈ 6 KB
 
 ![](images/gifs/interstellar.gif)
 
-<!-- pause -->
-
 **1.** "Just use HNSW" → 750 GB RAM → $5K/mo 💸
-
-<!-- pause -->
 
 **2.** "Add a separate vector DB" → two systems to sync forever 🔄
 
-<!-- pause -->
-
 **3.** "We'll optimize later" → index rebuild = 3 days, no deploys 🧊
-
-<!-- pause -->
 
 <span style="color: #f9e2af">Not bad tools — premature decisions made without doing the math.</span>
 
