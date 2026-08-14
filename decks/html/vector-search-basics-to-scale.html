@@ -14,7 +14,7 @@ body{background:#0e1020;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Se
 h1{flex:0 0 auto;font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.2;margin-bottom:18px;max-width:92%}
 h1 .kicker{display:block;font-size:.76rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
 h1::after{content:'';display:block;width:52px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--mauve));margin-top:14px}
-.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:18px;overflow:hidden;font-size:1.1rem;line-height:1.58;color:var(--subtext);padding-top:10px}
+.content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;gap:20px;overflow:hidden;font-size:1.1rem;line-height:1.58;color:var(--subtext);padding-top:16px}
 .content p{margin:0}
 .content strong{color:var(--text);font-weight:700}
 .lead{font-size:1.12rem;color:var(--text)}
@@ -58,6 +58,7 @@ img.sm{max-height:82vh}
 .callout.warn{border-left-color:var(--red);background:var(--callout-warn)}
 .callout.ok{border-left-color:var(--green);background:var(--callout-ok)}
 .center{align-items:center;text-align:center}
+.center .content{justify-content:center}
 .big{font-size:3.1rem;font-weight:800;line-height:1.08;letter-spacing:-.03em}
 .title{justify-content:center;align-items:center;text-align:center}
 .title h1::after{display:none}
@@ -159,7 +160,7 @@ Month 10: "Maybe we need a separate vector DB?"
 <!-- 7. Demo: Similarity -->
 <div class="slide dark">
   <h1><span class="kicker">Demo</span>Two Sentences → Numbers → Similarity</h1>
-  <div class="content" style="justify-content:space-evenly">
+  <div class="content">
     <div class="two">
       <div class="col" style="gap:16px">
         <h2 style="font-size:1.3rem" class="green">✅ High Similarity</h2>
@@ -256,7 +257,7 @@ C = [0.34, 0.76, 0.22, ..., 0.48]</pre>
 <!-- 12. Approximate Is Good Enough -->
 <div class="slide dark">
   <h1>The Key Insight: <span class="green">Approximate Is Good Enough</span></h1>
-  <div class="content" style="justify-content:space-evenly">
+  <div class="content">
     <p><strong>What if we don't need the <em>exact</em> top 10?</strong></p>
     <p><strong>What if finding 9 out of 10 true best matches is acceptable?</strong></p>
     <div class="fragment">
@@ -315,11 +316,11 @@ ANN search:    ███░░░░░░░░░░░░░░░░░  ~5%
 <div class="slide dark">
   <h1>The Cost of Getting It Wrong</h1>
   <div class="content">
-    <div class="figc"><img src="../../images/gifs/interstellar.gif" class="gif" style="max-height:28vh"></div>
-    <p class="fragment"><strong>1.</strong> "Just use HNSW" → 750 GB RAM → $5K/mo 💸</p>
-    <p class="fragment"><strong>2.</strong> "Add a separate vector DB" → two systems to sync forever 🔄</p>
-    <p class="fragment"><strong>3.</strong> "We'll optimize later" → index rebuild = 3 days, no deploys 🧊</p>
-    <p class="fragment yellow">Not bad tools — premature decisions made without doing the math.</p>
+    <div class="figc"><img src="../../images/gifs/interstellar.gif" class="gif" style="max-height:24vh"></div>
+    <p><strong>1.</strong> "Just use HNSW" → 750 GB RAM → $5K/mo 💸</p>
+    <p><strong>2.</strong> "Add a separate vector DB" → two systems to sync forever 🔄</p>
+    <p><strong>3.</strong> "We'll optimize later" → index rebuild = 3 days, no deploys 🧊</p>
+    <p class="yellow">Not bad tools — premature decisions made without doing the math.</p>
   </div>
 </div>
 
@@ -422,7 +423,7 @@ ANN search:    ███░░░░░░░░░░░░░░░░░  ~5%
           <p class="red"><strong>No error. No warning. No log line.</strong></p>
         </div>
       </div>
-      <div class="col figc"><img src="../../images/gifs/where.gif" class="gif" style="max-height:60vh"></div>
+      <div class="col figc"><img src="../../images/gifs/where.gif" class="gif" style="max-height:50vh"></div>
     </div>
   </div>
 </div>
